@@ -76,6 +76,10 @@ class OutgoingCallFragment : GenericCallFragment() {
         binding.callsViewModel = callsViewModel
         binding.numpadModel = callViewModel.numpadModel
 
+        binding.btnMinimizeFloating?.setOnClickListener {
+            (requireActivity() as org.linphone.ui.call.CallActivity).minimizeFloatingWindow()
+        }
+
         val callsAdapter = CallsListAdapter()
         binding.inCallCallsList?.apply {
             setHasFixedSize(true)

@@ -243,6 +243,11 @@ class CallModel
         subStatusText.postValueIfChanged(sub)
     }
 
+    // Only accessed from the Core thread
+    private var lastTickDuration = -1
+    private var lastTickState: Call.State? = null
+
+    @WorkerThread
     fun tickDuration(isCur: Boolean) {
         val s = call.state
         if (isCurrent.value != isCur) {
@@ -252,22 +257,24 @@ class CallModel
             s == Call.State.Paused || s == Call.State.PausedByRemote
         ) {
             val dur = call.duration
-            val durFormatted = formatDuration(dur)
-            val isLive = (s == Call.State.StreamsRunning || s == Call.State.Connected)
-            val newStatus = if (isLive) "Connected $durFormatted" else "On Hold $durFormatted"
-            val newTag = if (isLive) "(Received)" else "(Hold)"
-            val newDurText = " ($durFormatted)"
-
-            if (state.value != newStatus) state.postValue(newStatus)
-            if (statusTag.value != newTag) statusTag.postValue(newTag)
-            if (durationText.value != newDurText) durationText.postValue(newDurText)
+            // Same second + same state -> nothing to post (avoids useless main thread work)
+            if (dur == lastTickDuration && s == lastTickState) return
+            lastTickDuration = dur
+            lastTickState = s
+            // The call cell only displays durationText; statusTag/state are refreshed by updateStatus()
+            // when the call state really changes, so we no longer post them every second.
+            durationText.postValue(" (${formatDuration(dur)})")
         }
     }
 
     private fun formatDuration(seconds: Int): String {
         val mins = seconds / 60
         val secs = seconds % 60
-        return String.format("%02d:%02d", mins, secs)
+        return StringBuilder(5)
+            .append(if (mins < 10) "0" else "").append(mins)
+            .append(':')
+            .append(if (secs < 10) "0" else "").append(secs)
+            .toString()
     }
 
     @WorkerThread
@@ -291,9 +298,12 @@ class CallModel
         }
     }
 
+    private var hangUpRequested = false
+
     @UiThread
     fun hangUp() {
-        if (isEnded.value == true) return
+        if (hangUpRequested || isEnded.value == true) return
+        hangUpRequested = true
         // Instant visual feedback so user sees immediate response with zero lag
         isEnded.value = true
         statusTag.value = "(Ending...)"

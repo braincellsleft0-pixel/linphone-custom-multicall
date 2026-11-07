@@ -96,6 +96,19 @@ object FloatingBubbleManager {
         }
     }
 
+    // Coalesce bursts of call events into a single bubble refresh
+    private var uiUpdateScheduled = false
+    private val uiUpdateRunnable = Runnable {
+        uiUpdateScheduled = false
+        updateUI()
+    }
+
+    private fun scheduleUpdateUI() {
+        if (uiUpdateScheduled) return
+        uiUpdateScheduled = true
+        mainHandler.postDelayed(uiUpdateRunnable, 150)
+    }
+
     private val coreListener = object : CoreListenerStub() {
         override fun onCallStateChanged(core: Core, call: Call, state: Call.State, message: String) {
             Log.i("$TAG Call state changed: [$state] for [${call.remoteAddress?.asStringUriOnly()}]")
@@ -114,10 +127,10 @@ object FloatingBubbleManager {
                             show()
                         } else {
                             bubbleRootView?.visibility = View.VISIBLE
-                            updateUI()
+                            scheduleUpdateUI()
                         }
                     } else if (isShowing) {
-                        updateUI()
+                        scheduleUpdateUI()
                     }
                 }
             }
@@ -581,7 +594,7 @@ object FloatingBubbleManager {
     }
 
     private fun updateTimersOnly() {
-        if (!isShowing || bubbleRootView == null || isDismissing) return
+        if (!isShowing || bubbleRootView == null || isDismissing || isCallActivityVisible) return
         coreContext.postOnCoreThread { core ->
             if (isDismissing) return@postOnCoreThread
             terminatingCalls.removeAll { LinphoneUtils.isCallEnding(it.state, considerReleasedAsEnding = true) }

@@ -146,37 +146,7 @@ class CallActivity : GenericActivity() {
 
         // Configure compact floating overlay window dimensions & smooth animations (like Messenger!)
         if (org.linphone.ui.call.bubble.FloatingBubbleManager.canDrawOverlays(this)) {
-            window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
-            val metrics = resources.displayMetrics
-            val windowWidth = (metrics.widthPixels * 0.88).toInt().coerceAtMost(metrics.widthPixels - 32)
-            val windowHeight = (metrics.heightPixels * 0.62).toInt()
-            window.setLayout(windowWidth, windowHeight)
-            window.setGravity(android.view.Gravity.CENTER)
-            setFinishOnTouchOutside(false)
-
-            if (android.os.Build.VERSION.SDK_INT >= 34) {
-                overrideActivityTransition(android.app.Activity.OVERRIDE_TRANSITION_OPEN, 0, 0)
-                overrideActivityTransition(android.app.Activity.OVERRIDE_TRANSITION_CLOSE, 0, 0)
-            } else {
-                @Suppress("DEPRECATION")
-                overridePendingTransition(0, 0)
-            }
-
-            // Smooth hardware card enter animation (eliminates blank-state flicker!)
-            binding.floatingCardContainer.alpha = 0f
-            binding.floatingCardContainer.scaleX = 0.86f
-            binding.floatingCardContainer.scaleY = 0.86f
-            binding.floatingCardContainer.translationY = 30f
-            binding.floatingCardContainer.post {
-                binding.floatingCardContainer.animate()
-                    .alpha(1f)
-                    .scaleX(1f)
-                    .scaleY(1f)
-                    .translationY(0f)
-                    .setDuration(220)
-                    .setInterpolator(android.view.animation.DecelerateInterpolator(1.8f))
-                    .start()
-            }
+            configureFloatingWindow()
         }
 
         binding.otherCallsTopBar.btnMinimizeTopBar.setOnClickListener {
@@ -195,7 +165,11 @@ class CallActivity : GenericActivity() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.callNavContainer) { v, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
             val keyboard = windowInsets.getInsets(WindowInsetsCompat.Type.ime())
-            v.updatePadding(insets.left, 0, insets.right, max(insets.bottom, keyboard.bottom))
+            if (org.linphone.ui.call.bubble.FloatingBubbleManager.canDrawOverlays(this)) {
+                v.updatePadding(0, 0, 0, 0)
+            } else {
+                v.updatePadding(insets.left, 0, insets.right, max(insets.bottom, keyboard.bottom))
+            }
             WindowInsetsCompat.CONSUMED
         }
 
@@ -530,36 +504,7 @@ class CallActivity : GenericActivity() {
         setIntent(intent)
 
         if (org.linphone.ui.call.bubble.FloatingBubbleManager.canDrawOverlays(this)) {
-            window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
-            val metrics = resources.displayMetrics
-            val windowWidth = (metrics.widthPixels * 0.88).toInt().coerceAtMost(metrics.widthPixels - 32)
-            val windowHeight = (metrics.heightPixels * 0.62).toInt()
-            window.setLayout(windowWidth, windowHeight)
-            window.setGravity(android.view.Gravity.CENTER)
-            setFinishOnTouchOutside(false)
-
-            if (android.os.Build.VERSION.SDK_INT >= 34) {
-                overrideActivityTransition(android.app.Activity.OVERRIDE_TRANSITION_OPEN, 0, 0)
-                overrideActivityTransition(android.app.Activity.OVERRIDE_TRANSITION_CLOSE, 0, 0)
-            } else {
-                @Suppress("DEPRECATION")
-                overridePendingTransition(0, 0)
-            }
-
-            binding.floatingCardContainer.alpha = 0f
-            binding.floatingCardContainer.scaleX = 0.86f
-            binding.floatingCardContainer.scaleY = 0.86f
-            binding.floatingCardContainer.translationY = 30f
-            binding.floatingCardContainer.post {
-                binding.floatingCardContainer.animate()
-                    .alpha(1f)
-                    .scaleX(1f)
-                    .scaleY(1f)
-                    .translationY(0f)
-                    .setDuration(220)
-                    .setInterpolator(android.view.animation.DecelerateInterpolator(1.8f))
-                    .start()
-            }
+            configureFloatingWindow()
         }
 
         val uri = intent.data?.toString()
@@ -687,6 +632,63 @@ class CallActivity : GenericActivity() {
         }
     }
 
+    /**
+     * The window itself is full screen & transparent (a "scrim"), the visible card is sized in code.
+     * - tapping the transparent area around the card collapses to the bubble (reliable on every Android version,
+     *   unlike FLAG_WATCH_OUTSIDE_TOUCH / setFinishOnTouchOutside which depend on the theme)
+     * - window never resizes after creation, only the card is animated, with a hardware layer
+     *   so the heavy call UI is not redrawn on every animation frame.
+     * NOTE: Theme.LinphoneInCall must be translucent (windowIsTranslucent=true, transparent windowBackground).
+     */
+    private fun configureFloatingWindow() {
+        window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
+        window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+        window.setLayout(
+            android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+            android.view.ViewGroup.LayoutParams.MATCH_PARENT
+        )
+        setFinishOnTouchOutside(false)
+
+        val metrics = resources.displayMetrics
+        val cardWidth = (metrics.widthPixels * 0.88).toInt().coerceAtMost(metrics.widthPixels - 32)
+        val cardHeight = (metrics.heightPixels * 0.62).toInt()
+        val card = binding.floatingCardContainer
+        card.layoutParams = android.widget.FrameLayout.LayoutParams(cardWidth, cardHeight).apply {
+            gravity = android.view.Gravity.CENTER
+        }
+        // Swallow touches inside the card (no ripple) so only the outside area collapses the window
+        card.isClickable = true
+        card.rippleColor = android.content.res.ColorStateList.valueOf(android.graphics.Color.TRANSPARENT)
+        binding.floatingRoot.setOnClickListener {
+            Log.i("$TAG Tapped outside the floating card, collapsing to bubble")
+            minimizeFloatingWindow()
+        }
+
+        if (android.os.Build.VERSION.SDK_INT >= 34) {
+            overrideActivityTransition(android.app.Activity.OVERRIDE_TRANSITION_OPEN, 0, 0)
+            overrideActivityTransition(android.app.Activity.OVERRIDE_TRANSITION_CLOSE, 0, 0)
+        } else {
+            @Suppress("DEPRECATION")
+            overridePendingTransition(0, 0)
+        }
+
+        card.alpha = 0f
+        card.scaleX = 0.9f
+        card.scaleY = 0.9f
+        card.translationY = 24f
+        card.post {
+            card.animate()
+                .alpha(1f)
+                .scaleX(1f)
+                .scaleY(1f)
+                .translationY(0f)
+                .setDuration(200)
+                .setInterpolator(android.view.animation.DecelerateInterpolator(1.8f))
+                .withLayer()
+                .start()
+        }
+    }
+
     fun minimizeFloatingWindow() {
         if (isFinishing || isDestroyed) return
         if (org.linphone.ui.call.bubble.FloatingBubbleManager.canDrawOverlays(this)) {
@@ -695,8 +697,9 @@ class CallActivity : GenericActivity() {
                 .scaleX(0.75f)
                 .scaleY(0.75f)
                 .translationY(30f)
-                .setDuration(160)
+                .setDuration(150)
                 .setInterpolator(android.view.animation.AccelerateInterpolator(1.5f))
+                .withLayer()
                 .withEndAction {
                     finish()
                     if (android.os.Build.VERSION.SDK_INT >= 34) {

@@ -78,6 +78,27 @@ class CallsViewModel
     // Synchronous call list kept strictly on the Core Thread to prevent race conditions & duplicate models
     internal val modelsList = arrayListOf<CallModel>()
 
+    // Core thread only. Coalesces bursts of call events (end-all, many calls ringing...) into ONE UI refresh
+    private var listRefreshPending = false
+    private var lastOtherCallsIds: List<String>? = null
+
+    @WorkerThread
+    private fun scheduleListRefresh() {
+        if (listRefreshPending) return
+        listRefreshPending = true
+        viewModelScope.launch {
+            delay(120)
+            coreContext.postOnCoreThread { core ->
+                listRefreshPending = false
+                calls.postValue(ArrayList(modelsList))
+                callsCount.postValue(
+                    core.calls.count { !LinphoneUtils.isCallEnding(it.state, considerReleasedAsEnding = true) }
+                )
+                updateOtherCallsInfo()
+            }
+        }
+    }
+
     @UiThread
     fun terminateAllCalls() {
         Log.i("$TAG Terminating all calls with instant UI feedback")
@@ -146,14 +167,9 @@ class CallsViewModel
                     )
                     val model = CallModel(call)
                     modelsList.add(model)
-                    calls.postValue(ArrayList(modelsList))
-                    val activeCallsCount = core.calls.count { !LinphoneUtils.isCallEnding(it.state, considerReleasedAsEnding = true) }
-                    callsCount.postValue(activeCallsCount)
-                    Log.i("$TAG There is [${modelsList.size}] calls in list, [$activeCallsCount] active")
+                    scheduleListRefresh()
                 }
             } else {
-                val activeCallsCount = core.calls.count { !LinphoneUtils.isCallEnding(it.state, considerReleasedAsEnding = true) }
-                callsCount.postValue(activeCallsCount)
 
                 if (state == Call.State.Released || state == Call.State.Error) {
                     Log.i(
@@ -163,12 +179,9 @@ class CallsViewModel
                         delay(600)
                         coreContext.postOnCoreThread {
                             if (found != null && modelsList.remove(found)) {
-                                calls.postValue(ArrayList(modelsList))
-                                val remainingActive = core.calls.count { !LinphoneUtils.isCallEnding(it.state, considerReleasedAsEnding = true) }
-                                callsCount.postValue(remainingActive)
                                 found.destroy()
                                 updateCallsSelection()
-                                updateOtherCallsInfo()
+                                scheduleListRefresh()
                             }
                         }
                     }
@@ -180,7 +193,7 @@ class CallsViewModel
                 !LinphoneUtils.isCallEnding(it.state, considerReleasedAsEnding = true)
             } ?: core.calls.firstOrNull()
             found?.updateStatus(isCur = (cur != null && found.call == cur))
-            updateOtherCallsInfo()
+            scheduleListRefresh()
 
             // Update currently displayed fragment according to call state
             val currentFocus = focusedCall ?: core.currentCall
@@ -447,7 +460,11 @@ class CallsViewModel
         }?.call
 
         val otherCalls = modelsList.filter { it.call != cur }
-        callsExceptCurrentOne.postValue(ArrayList(otherCalls))
+        val otherIds = otherCalls.map { it.id }
+        if (otherIds != lastOtherCallsIds) {
+            lastOtherCallsIds = otherIds
+            callsExceptCurrentOne.postValue(ArrayList(otherCalls))
+        }
 
         val activeCount = modelsList.count { it.isEnded.value != true }
         if (activeCount > 1) {

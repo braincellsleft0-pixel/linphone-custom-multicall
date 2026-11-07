@@ -212,6 +212,10 @@ class ActiveCallFragment : GenericCallFragment() {
             (requireActivity() as CallActivity).goToMainActivity()
         }
 
+        binding.btnMinimizeFloating?.setOnClickListener {
+            (requireActivity() as CallActivity).minimizeFloatingWindow()
+        }
+
         binding.setTransferCallClickListener {
             if (findNavController().currentDestination?.id == R.id.activeCallFragment) {
                 val action =

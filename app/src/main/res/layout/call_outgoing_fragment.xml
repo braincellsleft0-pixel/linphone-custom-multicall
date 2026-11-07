@@ -95,6 +95,22 @@
                     android:src="@drawable/phone_plus"
                     android:contentDescription="@string/call_action_start_new_call"
                     app:tint="@color/bc_white"
+                    app:layout_constraintEnd_toStartOf="@id/btn_minimize_floating"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+
+                <!-- Collapse the floating window back to the bubble -->
+                <ImageView
+                    android:id="@+id/btn_minimize_floating"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="6dp"
+                    android:padding="7dp"
+                    android:src="@drawable/caret_down"
+                    android:contentDescription="Minimize to bubble"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:tint="@color/bc_white"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"/>
