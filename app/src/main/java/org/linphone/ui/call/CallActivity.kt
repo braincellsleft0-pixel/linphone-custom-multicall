@@ -20,9 +20,11 @@
 package org.linphone.ui.call
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
+import android.media.AudioManager
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.KeyboardShortcutGroup
@@ -143,6 +145,7 @@ class CallActivity : GenericActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.call_activity)
         binding.lifecycleOwner = this
         setUpToastsArea(binding.toastsArea)
+        volumeControlStream = AudioManager.STREAM_VOICE_CALL
 
         // Configure compact floating overlay window dimensions & smooth animations (like Messenger!)
         if (org.linphone.ui.call.bubble.FloatingBubbleManager.canDrawOverlays(this)) {
@@ -621,6 +624,35 @@ class CallActivity : GenericActivity() {
             }
         }
         return true
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            if (coreContext.isReady() && coreContext.core.callsNb > 0) {
+                val direction = if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+                    AudioManager.ADJUST_RAISE
+                } else {
+                    AudioManager.ADJUST_LOWER
+                }
+                val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                audioManager.adjustStreamVolume(
+                    AudioManager.STREAM_VOICE_CALL,
+                    direction,
+                    AudioManager.FLAG_SHOW_UI
+                )
+                return true
+            }
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            if (coreContext.isReady() && coreContext.core.callsNb > 0) {
+                return true
+            }
+        }
+        return super.onKeyUp(keyCode, event)
     }
 
     fun goToMainActivity() {

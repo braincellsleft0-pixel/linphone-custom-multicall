@@ -476,6 +476,7 @@ class CoreContext
         @WorkerThread
         override fun onLastCallEnded(core: Core) {
             Log.i("$TAG Last call ended")
+            AudioUtils.resetSystemAudioRoute()
             val currentCamera = core.videoDevice
             if (currentCamera != "FrontFacingCamera") {
                 val frontFacing = core.videoDevicesList.find { it == "FrontFacingCamera" }

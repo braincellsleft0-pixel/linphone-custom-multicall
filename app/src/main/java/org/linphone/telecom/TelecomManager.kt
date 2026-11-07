@@ -204,6 +204,20 @@ class TelecomManager
     }
 
     @WorkerThread
+    fun requestSpeakerEndpoint(call: Call? = null) {
+        val currentCall = call ?: coreContext.core.currentCall ?: coreContext.core.calls.firstOrNull()
+        val callback = (if (currentCall != null) map[currentCall.callLog.callId.orEmpty()] else null) ?: map.values.firstOrNull()
+        callback?.requestSpeakerEndpoint()
+    }
+
+    @WorkerThread
+    fun requestEarpieceEndpoint(call: Call? = null) {
+        val currentCall = call ?: coreContext.core.currentCall ?: coreContext.core.calls.firstOrNull()
+        val callback = (if (currentCall != null) map[currentCall.callLog.callId.orEmpty()] else null) ?: map.values.firstOrNull()
+        callback?.requestEarpieceEndpoint()
+    }
+
+    @WorkerThread
     fun onCoreStarted(core: Core) {
         Log.i("$TAG Core has been started")
         if (hasTelecomFeature) {

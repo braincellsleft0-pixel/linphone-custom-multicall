@@ -49,6 +49,41 @@ class TelecomCallControlCallback(
     }
 
     private var mutedByTelecomManager = false
+    private var latestEndpoints: List<CallEndpointCompat> = emptyList()
+
+    fun requestSpeakerEndpoint() {
+        val speakerEndpoint = latestEndpoints.find { it.type == CallEndpointCompat.TYPE_SPEAKER }
+        if (speakerEndpoint != null) {
+            scope.launch {
+                try {
+                    Log.i("$TAG Requesting Telecom endpoint change to SPEAKER [${speakerEndpoint.name}]")
+                    val result = callControl.requestEndpointChange(speakerEndpoint)
+                    Log.i("$TAG Telecom requestEndpointChange(SPEAKER) result: $result")
+                } catch (e: Exception) {
+                    Log.w("$TAG Failed to request Telecom endpoint change to SPEAKER: $e")
+                }
+            }
+        } else {
+            Log.w("$TAG No SPEAKER endpoint found in available endpoints list (${latestEndpoints.size} endpoints)")
+        }
+    }
+
+    fun requestEarpieceEndpoint() {
+        val earpieceEndpoint = latestEndpoints.find { it.type == CallEndpointCompat.TYPE_EARPIECE }
+        if (earpieceEndpoint != null) {
+            scope.launch {
+                try {
+                    Log.i("$TAG Requesting Telecom endpoint change to EARPIECE [${earpieceEndpoint.name}]")
+                    val result = callControl.requestEndpointChange(earpieceEndpoint)
+                    Log.i("$TAG Telecom requestEndpointChange(EARPIECE) result: $result")
+                } catch (e: Exception) {
+                    Log.w("$TAG Failed to request Telecom endpoint change to EARPIECE: $e")
+                }
+            }
+        } else {
+            Log.w("$TAG No EARPIECE endpoint found in available endpoints list (${latestEndpoints.size} endpoints)")
+        }
+    }
 
     private val callListener = object : CallListenerStub() {
         @WorkerThread
@@ -116,11 +151,16 @@ class TelecomCallControlCallback(
         }
 
         callControl.availableEndpoints.onEach { list ->
-            Log.i("$TAG New available audio endpoints list but ignoring it")
+            latestEndpoints = list
+            Log.i("$TAG Available audio endpoints list: ${list.map { "${it.name}:${it.type}" }}")
+            val isSpeaker = call.outputAudioDevice?.type == org.linphone.core.AudioDevice.Type.Speaker || AudioUtils.shouldUseStickySpeaker()
+            if (isSpeaker) {
+                requestSpeakerEndpoint()
+            }
         }.launchIn(scope)
 
         callControl.currentCallEndpoint.onEach { endpoint ->
-            Log.i("$TAG Android requests us to use [${endpoint.name}] audio endpoint with type [${endpointTypeToString(endpoint.type)}], ignoring it")
+            Log.i("$TAG Current Telecom call endpoint [${endpoint.name}] with type [${endpointTypeToString(endpoint.type)}]")
         }.launchIn(scope)
 
         callControl.isMuted.onEach { muted ->
