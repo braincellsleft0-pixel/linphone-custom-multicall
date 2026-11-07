@@ -725,7 +725,6 @@ object FloatingBubbleManager {
         view: View,
         params: WindowManager.LayoutParams
     ) {
-        val quickEndBtn = view.findViewById<View>(R.id.bubble_collapsed_quick_end)
         val touchSlop = ViewConfiguration.get(view.context).scaledTouchSlop
 
         var initialX = 0
@@ -735,18 +734,6 @@ object FloatingBubbleManager {
         var isMoving = false
 
         view.setOnTouchListener { v, event ->
-            val rawX = event.rawX.toInt()
-            val rawY = event.rawY.toInt()
-
-            if (quickEndBtn != null && quickEndBtn.visibility == View.VISIBLE && quickEndBtn.isEnabled) {
-                val quickEndRect = Rect()
-                quickEndBtn.getGlobalVisibleRect(quickEndRect)
-                quickEndRect.inset(-dp(4f), -dp(4f))
-                if (quickEndRect.contains(rawX, rawY)) {
-                    return@setOnTouchListener false
-                }
-            }
-
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     val b = screenBounds()
@@ -793,24 +780,24 @@ object FloatingBubbleManager {
                 }
                 MotionEvent.ACTION_UP -> {
                     if (!isMoving) {
-                        if (isDismissing) {
-                            return@setOnTouchListener true
-                        }
+                        if (isDismissing) return@setOnTouchListener true
                         Log.i("$TAG Bubble tapped -> launching real CallActivity as floating overlay window")
-                        val chip = chipView ?: return@setOnTouchListener true
-                        chip.animateSafe(
-                            70,
-                            android.view.animation.DecelerateInterpolator(),
-                            { scaleX(0.92f).scaleY(0.92f) },
-                            {
-                                chip.animateSafe(
-                                    90,
-                                    android.view.animation.DecelerateInterpolator(),
-                                    { scaleX(1.0f).scaleY(1.0f) },
-                                    { onBubbleTapped(v.context) }
-                                )
-                            }
-                        )
+                        v.performClick()
+                        onBubbleTapped(v.context)
+                        chipView?.let { chip ->
+                            chip.animateSafe(
+                                70,
+                                android.view.animation.DecelerateInterpolator(),
+                                { scaleX(0.94f).scaleY(0.94f) },
+                                {
+                                    chip.animateSafe(
+                                        90,
+                                        android.view.animation.DecelerateInterpolator(),
+                                        { scaleX(1f).scaleY(1f) }
+                                    )
+                                }
+                            )
+                        }
                     } else {
                         // Drag released -> Glide to nearest screen edge
                         val b = screenBounds()
@@ -920,20 +907,30 @@ object FloatingBubbleManager {
      * Uses PendingIntent with background activity launch options for Android 14+ support!
      */
     fun onBubbleTapped(context: Context) {
-        Log.i("$TAG Bubble tapped → launching real CallActivity via PendingIntent")
-
-        val intent = LinphoneUtils.getCallActivityIntent(context).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+        val launchContext = if (context is ContextThemeWrapper) context.baseContext else context
+        val intent = LinphoneUtils.getCallActivityIntent(launchContext).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
             putExtra("ActiveCall", true)
             putExtra("FromBubbleTap", true)
         }
 
+        // 1) Direct start: the app owns a visible TYPE_APPLICATION_OVERLAY window (SYSTEM_ALERT_WINDOW granted),
+        //    which is an allowed background-activity-start exemption on Android 10-16.
+        val started = try {
+            launchContext.startActivity(intent)
+            Log.i("$TAG Direct startActivity succeeded for CallActivity")
+            true
+        } catch (e: Exception) {
+            Log.e("$TAG startActivity failed: $e")
+            false
+        }
+        if (started) return
+
+        // 2) Fallback: PendingIntent with BAL options
         try {
             val options = org.linphone.compatibility.Compatibility.getPendingIntentActivityOptions(true)
             val pendingIntent = android.app.PendingIntent.getActivity(
-                context,
+                launchContext,
                 1001,
                 intent,
                 android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE,
@@ -943,12 +940,7 @@ object FloatingBubbleManager {
             org.linphone.compatibility.Compatibility.sendPendingIntent(pendingIntent, senderOptions.toBundle())
             Log.i("$TAG PendingIntent sent successfully to launch CallActivity")
         } catch (e: Exception) {
-            Log.e("$TAG Failed to launch CallActivity via PendingIntent: $e, trying direct startActivity")
-            try {
-                context.startActivity(intent)
-            } catch (e2: Exception) {
-                Log.e("$TAG Direct startActivity also failed: $e2")
-            }
+            Log.e("$TAG PendingIntent launch failed: $e")
         }
     }
 

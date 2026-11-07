@@ -672,6 +672,7 @@ class CallActivity : GenericActivity() {
             overridePendingTransition(0, 0)
         }
 
+        card.animate().cancel()
         card.alpha = 0f
         card.scaleX = 0.9f
         card.scaleY = 0.9f

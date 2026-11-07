@@ -19,8 +19,6 @@
         android:orientation="horizontal"
         android:paddingStart="6dp"
         android:paddingEnd="2dp"
-        android:clickable="true"
-        android:focusable="true"
         android:contentDescription="Active call">
 
         <!-- 32dp icon + status dot -->
