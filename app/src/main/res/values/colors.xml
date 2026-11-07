@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="transparent_color">#00000000</color>
+    <color name="bc_black">#000000</color>
+    <color name="bc_white">#FFFFFF</color>
+    <color name="dialog_background">#99000000</color><!-- 60% opacity -->
+    <color name="shadow">#10000000</color>
+    <color name="vu_meter">#3CFFFFFF</color>
+
+    <color name="background_color_dark_mode">#191919</color>
+    <color name="background_color_alt_dark_mode">#303030</color>
+
+    <color name="orange_main_100">#FFEACB</color>
+    <color name="orange_main_500">#FF5E00</color>
+
+    <color name="gray_main2_100">#EEF6F8</color>
+    <color name="gray_main2_200">#DFECF2</color>
+    <color name="gray_main2_300">#C0D1D9</color>
+    <color name="gray_main2_400">#9AABB5</color>
+    <color name="gray_main2_500">#6C7A87</color>
+    <color name="gray_main2_600">#4E6074</color>
+    <color name="gray_main2_700">#364860</color>
+    <color name="gray_main2_800">#22334D</color>
+    <color name="gray_main2_900">#37475A</color>
+
+    <color name="gray_100">#F9F9F9</color>
+    <color name="gray_200">#EDEDED</color>
+    <color name="gray_200_night">#1F1F1F</color>
+    <color name="gray_300">#C9C9C9</color>
+    <color name="gray_300_alpha_40">#66C9C9C9</color>
+    <color name="gray_400">#949494</color>
+    <color name="gray_500">#4E4E4E</color>
+    <color name="gray_600">#2E3030</color>
+    <color name="gray_700">#383939</color>
+    <color name="gray_800">#0F0F0F</color>
+    <color name="gray_900">#070707</color>
+
+    <color name="red_danger_100">#FBE9E9</color>
+    <color name="red_danger_500">#DD5F5F</color>
+    <color name="red_danger_500_night">#E17474</color>
+    <color name="red_danger_600">#B03A3A</color>
+    <color name="red_danger_700">#9E3548</color>
+    <color name="red_danger_700_night">#B13B51</color>
+    <color name="red_danger_900">#723333</color>
+    <color name="red_danger_900_night">#843B3B</color>
+
+    <color name="green_success_100">#E4F4EC</color>
+    <color name="green_success_200">#ACF5C1</color>
+    <color name="green_success_200_night">#0D6A27</color>
+    <color name="green_success_500">#4FAE80</color>
+    <color name="green_success_500_night">#60B78D</color>
+    <color name="green_success_700">#377D71</color>
+    <color name="green_success_700_night">#3F8F81</color>
+    <color name="green_success_900">#2A7050</color>
+
+    <color name="blue_info_500">#4AA8FF</color>
+    <color name="blue_info_500_night">#64B4FF</color>
+
+    <color name="orange_plain_text_security_warning_600">#AF9308</color>
+    <color name="orange_warning_100">#F8F1D4</color>
+    <color name="orange_warning_100_night">#d6aa28</color>
+    <color name="orange_warning_600">#DBB820</color>
+    <color name="orange_warning_600_night">#E1C133</color>
+    <color name="orange_warning_900">#776208</color>
+
+    <color name="gray_offline_100">#E9EDF1</color>
+    <color name="gray_offline_900">#37475A</color>
+
+    <color name="gradient_progress">#80FFFFFF</color>
+
+    <color name="terracotta_main_100">#F2D2C7</color>
+    <color name="terracotta_main_500">#C86B45</color>
+
+    <color name="lavender_main_100">#E9E7F2</color>
+    <color name="lavender_main_500">#7F79B5</color>
+
+    <color name="honey_main_100">#FBFCE9</color>
+    <color name="honey_main_500">#D9A441</color>
+
+    <color name="burgundy_main_100">#F6BBC3</color>
+    <color name="burgundy_main_500">#7A1E39</color>
+
+    <color name="mint_main_100">#DEF2E8</color>
+    <color name="mint_main_500">#7AC9A1</color>
+
+    <color name="coral_main_100">#FFD3D6</color>
+    <color name="coral_main_500">#F26B5E</color>
+
+    <color name="plum_main_100">#DBBED9</color>
+    <color name="plum_main_500">#9B4F96</color>
+
+    <color name="titanium_main_100">#D9D9D9</color>
+    <color name="titanium_main_500">#8A939B</color>
+
+    <color name="mineral_blue_main_100">#C5E0F3</color>
+    <color name="mineral_blue_main_500">#669ED7</color>
+
+</resources>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+        <import type="android.view.View" />
+        <import type="org.linphone.core.AudioDevice.Type" />
+        <variable
+            name="model"
+            type="org.linphone.ui.call.model.AudioDeviceModel" />
+    </data>
+
+    <com.google.android.material.radiobutton.MaterialRadioButton
+        style="@style/context_menu_action_label_style"
+        android:onClick="@{() -> model.onClicked()}"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:enabled="@{model.isEnabled}"
+        android:text="@{model.name, default=`Speaker`}"
+        android:textColor="@color/in_call_label_color"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="1dp"
+        android:drawableEnd="@{model.type == Type.Hdmi ? @drawable/monitor : model.type == Type.HearingAid ? @drawable/ear : model.type == Type.Speaker ? @drawable/speaker_high : model.type == Type.Bluetooth ? @drawable/bluetooth : model.type == Type.Headphones || model.type == Type.Headset ? @drawable/headset : @drawable/speaker_slash, default=@drawable/speaker_high}"
+        android:drawableTint="@color/in_call_label_color"
+        android:checked="@{model.isCurrentlySelected}"
+        app:useMaterialThemeColors="false"
+        app:buttonTint="@color/in_call_label_color"/>
+
+</layout>

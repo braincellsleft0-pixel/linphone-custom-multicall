@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="backClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="shareClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="viewModel"
+            type="org.linphone.ui.fileviewer.viewmodel.FileViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/bc_black">
+
+        <androidx.constraintlayout.widget.Group
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="@{viewModel.fullScreenMode ? View.GONE : View.VISIBLE}"
+            app:constraint_referenced_ids="top_bar_background, back, file_name, date_time"/>
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/top_bar_barrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:constraint_referenced_ids="back, date_time"
+            app:barrierDirection="bottom" />
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/pdf_view_pager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:background="@color/bc_white"
+            android:visibility="@{viewModel.isPdf ? View.VISIBLE : View.GONE, default=gone}" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style"
+            android:id="@+id/pages_indicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:visibility="@{viewModel.isPdf ? View.VISIBLE : View.GONE, default=gone}"
+            android:text="@{viewModel.pdfCurrentPage + ` / ` + viewModel.pdfPages, default=`1 / 30`}"
+            android:textColor="@color/bc_white"
+            android:background="#80000000"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@id/pdf_view_pager"
+            app:layout_constraintEnd_toEndOf="@id/pdf_view_pager" />
+
+        <ScrollView
+            android:id="@+id/text"
+            android:onClick="@{() -> viewModel.toggleFullScreen()}"
+            android:background="?attr/color_main2_000"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:visibility="@{viewModel.isText ? View.VISIBLE : View.GONE, default=gone}" >
+
+            <TextView
+                style="@style/default_text_style"
+                android:onClick="@{() -> viewModel.toggleFullScreen()}"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:singleLine="false"
+                android:textIsSelectable="true"
+                android:textColor="?attr/color_main2_900"
+                android:text="@{viewModel.text}"/>
+
+        </ScrollView>
+
+        <View
+            android:id="@+id/top_bar_background"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/top_bar_height"
+            android:background="@color/bc_white"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/top_bar_barrier"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <ImageView
+            style="@style/icon_top_bar_button_style"
+            android:id="@+id/back"
+            android:onClick="@{backClickListener}"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:src="@drawable/caret_left"
+            android:background="@drawable/circle_transparent_light_button_background"
+            android:contentDescription="@string/content_description_go_back_icon"
+            app:tint="?attr/color_main1_500"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/top_bar_barrier" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style_700"
+            android:id="@+id/file_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:text="@{viewModel.fileName, default=`nomdufichier.jpg`}"
+            android:textSize="13sp"
+            android:textColor="@color/gray_main2_600"
+            android:maxLines="1"
+            android:ellipsize="end"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintEnd_toStartOf="@id/share"
+            app:layout_constraintStart_toEndOf="@id/back"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/date_time"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style_300"
+            android:id="@+id/date_time"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:text="@{viewModel.dateTime, default=`envoyé le 02/05/2023 à 11h05`}"
+            android:textSize="12sp"
+            android:textColor="@color/gray_main2_500"
+            android:maxLines="1"
+            android:ellipsize="end"
+            app:layout_constraintTop_toBottomOf="@id/file_name"
+            app:layout_constraintBottom_toBottomOf="@id/back"
+            app:layout_constraintEnd_toStartOf="@id/share"
+            app:layout_constraintStart_toEndOf="@id/back"/>
+
+        <ImageView
+            style="@style/icon_top_bar_button_style"
+            android:id="@+id/share"
+            android:onClick="@{shareClickListener}"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:src="@drawable/share_network"
+            android:background="@drawable/circle_transparent_light_button_background"
+            android:contentDescription="@string/content_description_share_file"
+            android:visibility="@{viewModel.fullScreenMode || viewModel.isFromEphemeralMessage ? View.GONE : View.VISIBLE}"
+            app:tint="@color/gray_main2_600"
+            app:layout_constraintEnd_toStartOf="@id/save"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/top_bar_barrier" />
+
+        <ImageView
+            style="@style/icon_top_bar_button_style"
+            android:id="@+id/save"
+            android:onClick="@{() -> viewModel.exportToMediaStore()}"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:src="@drawable/download_simple"
+            android:background="@drawable/circle_transparent_light_button_background"
+            android:contentDescription="@string/content_description_save_file"
+            android:visibility="@{viewModel.fullScreenMode || viewModel.isFromEphemeralMessage ? View.GONE : View.VISIBLE}"
+            app:tint="@color/gray_main2_600"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/top_bar_barrier" />
+
+        <LinearLayout
+            android:id="@+id/toasts_area"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="@dimen/toast_top_margin"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            app:layout_constraintWidth_max="@dimen/toast_max_width"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

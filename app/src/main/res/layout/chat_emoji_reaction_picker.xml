@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="pickEmojiClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="model"
+            type="org.linphone.ui.main.chat.model.MessageModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/emojis_background"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:src="@drawable/shape_squircle_white_r50_background"
+            android:contentDescription="@null"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style"
+            android:id="@+id/thumbs_up"
+            android:onClick="@{() -> model.sendReaction(@string/emoji_thumbs_up)}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="3dp"
+            android:text="@string/emoji_thumbs_up"
+            android:textSize="@dimen/chat_bubble_long_press_emoji_reaction_size"
+            android:selected="@{model.ourReactionIndex == 0}"
+            android:background="@drawable/squircle_emoji_reaction_button_background"
+            app:layout_constraintHorizontal_chainStyle="spread"
+            app:layout_constraintTop_toTopOf="@id/emojis_background"
+            app:layout_constraintBottom_toBottomOf="@id/emojis_background"
+            app:layout_constraintStart_toStartOf="@id/emojis_background"
+            app:layout_constraintEnd_toStartOf="@id/love"
+            tools:ignore="SpUsage" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style"
+            android:id="@+id/love"
+            android:onClick="@{() -> model.sendReaction(@string/emoji_love)}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="3dp"
+            android:text="@string/emoji_love"
+            android:textSize="@dimen/chat_bubble_long_press_emoji_reaction_size"
+            android:selected="@{model.ourReactionIndex == 1}"
+            android:background="@drawable/squircle_emoji_reaction_button_background"
+            app:layout_constraintTop_toTopOf="@id/thumbs_up"
+            app:layout_constraintBottom_toBottomOf="@id/thumbs_up"
+            app:layout_constraintStart_toEndOf="@id/thumbs_up"
+            app:layout_constraintEnd_toStartOf="@id/laughing"
+            tools:ignore="SpUsage" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style"
+            android:id="@+id/laughing"
+            android:onClick="@{() -> model.sendReaction(@string/emoji_laughing)}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="3dp"
+            android:text="@string/emoji_laughing"
+            android:textSize="@dimen/chat_bubble_long_press_emoji_reaction_size"
+            android:selected="@{model.ourReactionIndex == 2}"
+            android:background="@drawable/squircle_emoji_reaction_button_background"
+            app:layout_constraintTop_toTopOf="@id/thumbs_up"
+            app:layout_constraintBottom_toBottomOf="@id/thumbs_up"
+            app:layout_constraintStart_toEndOf="@id/love"
+            app:layout_constraintEnd_toStartOf="@id/surprised"
+            tools:ignore="SpUsage" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style"
+            android:id="@+id/surprised"
+            android:onClick="@{() -> model.sendReaction(@string/emoji_surprised)}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="3dp"
+            android:text="@string/emoji_surprised"
+            android:textSize="@dimen/chat_bubble_long_press_emoji_reaction_size"
+            android:selected="@{model.ourReactionIndex == 3}"
+            android:background="@drawable/squircle_emoji_reaction_button_background"
+            app:layout_constraintTop_toTopOf="@id/thumbs_up"
+            app:layout_constraintBottom_toBottomOf="@id/thumbs_up"
+            app:layout_constraintStart_toEndOf="@id/laughing"
+            app:layout_constraintEnd_toStartOf="@id/tear"
+            tools:ignore="SpUsage" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style"
+            android:id="@+id/tear"
+            android:onClick="@{() -> model.sendReaction(@string/emoji_tear)}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="3dp"
+            android:text="@string/emoji_tear"
+            android:textSize="@dimen/chat_bubble_long_press_emoji_reaction_size"
+            android:selected="@{model.ourReactionIndex == 4}"
+            android:background="@drawable/squircle_emoji_reaction_button_background"
+            app:layout_constraintTop_toTopOf="@id/thumbs_up"
+            app:layout_constraintBottom_toBottomOf="@id/thumbs_up"
+            app:layout_constraintStart_toEndOf="@id/surprised"
+            app:layout_constraintEnd_toStartOf="@id/plus"
+            tools:ignore="SpUsage" />
+
+        <ImageView
+            android:id="@+id/plus"
+            android:onClick="@{pickEmojiClickListener}"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="6dp"
+            android:paddingTop="10dp"
+            android:adjustViewBounds="true"
+            android:src="@drawable/plus_circle"
+            android:background="@drawable/squircle_emoji_reaction_button_background"
+            android:contentDescription="@string/content_description_chat_open_emoji_picker"
+            app:layout_constraintStart_toEndOf="@id/tear"
+            app:layout_constraintEnd_toEndOf="@id/emojis_background"
+            app:layout_constraintTop_toTopOf="@id/thumbs_up"
+            app:layout_constraintBottom_toBottomOf="@id/thumbs_up"
+            app:tint="?attr/color_main2_500" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

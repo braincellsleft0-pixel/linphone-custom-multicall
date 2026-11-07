@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/tools">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="model"
+            type="org.linphone.ui.main.model.SelectedAddressModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <include
+            android:id="@+id/avatar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            layout="@layout/contact_avatar"
+            bind:model="@{model.avatarModel}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style"
+            android:id="@+id/name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@{model.avatarModel.name, default=`John Doe`}"
+            android:textSize="14sp"
+            android:layout_marginStart="10dp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            app:layout_constraintStart_toEndOf="@id/avatar"
+            app:layout_constraintEnd_toStartOf="@id/remove"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <ImageView
+            android:id="@+id/remove"
+            android:onClick="@{() -> model.removeFromSelection()}"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:padding="12dp"
+            android:adjustViewBounds="true"
+            android:layout_marginEnd="12dp"
+            android:src="@drawable/x"
+            android:contentDescription="@string/content_description_click_to_remove_participant"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:tint="@color/red_danger_500" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

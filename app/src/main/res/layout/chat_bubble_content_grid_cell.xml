@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/tools">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="onLongClickListener"
+            type="View.OnLongClickListener" />
+        <variable
+            name="model"
+            type="org.linphone.ui.main.chat.model.FileModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_wrapBefore="@{model.flexboxLayoutWrapBefore}">
+
+        <ViewStub
+            android:id="@+id/media_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout="@layout/chat_bubble_media_grid_cell"
+            android:visibility="@{model.isImage || model.isVideoPreview ? View.VISIBLE : View.GONE}"
+            bind:inflatedVisibility="@{model.isImage || model.isVideoPreview ? View.VISIBLE : View.GONE}"
+            bind:model="@{model}"
+            bind:onLongClickListener="@{onLongClickListener}"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <ViewStub
+            android:id="@+id/file_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout="@layout/chat_bubble_file_grid_cell"
+            android:visibility="@{!model.isImage &amp;&amp; !model.isVideoPreview ? View.VISIBLE : View.GONE}"
+            bind:inflatedVisibility="@{!model.isImage &amp;&amp; !model.isVideoPreview ? View.VISIBLE : View.GONE}"
+            bind:model="@{model}"
+            bind:onLongClickListener="@{onLongClickListener}"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

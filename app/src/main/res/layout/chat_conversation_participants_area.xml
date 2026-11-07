@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="viewModel"
+            type="org.linphone.ui.main.chat.viewmodel.SendMessageInConversationViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/color_main2_000">
+
+        <View
+            android:id="@+id/participants_separator"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?attr/color_separator"
+            android:importantForAccessibility="no"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style"
+            android:id="@+id/participants_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="@string/conversation_participants_list_header"
+            android:textSize="12sp"
+            android:textColor="?attr/color_main2_500"
+            app:layout_constraintTop_toTopOf="@id/participants_close"
+            app:layout_constraintBottom_toBottomOf="@id/participants_close"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/participants_list"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/chat_room_participants_list_max_height"
+            android:layout_marginTop="5dp"
+            android:scrollbars="vertical"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/participants_close" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style"
+            android:id="@+id/participants_empty_list_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="@string/conversation_participants_list_empty"
+            android:textSize="14sp"
+            android:textColor="?attr/color_main2_500"
+            android:visibility="@{viewModel.participants.empty ? View.VISIBLE : View.GONE, default=gone}"
+            app:layout_constraintTop_toTopOf="@id/participants_list"
+            app:layout_constraintBottom_toBottomOf="@id/participants_list"
+            app:layout_constraintStart_toStartOf="@id/participants_list"
+            app:layout_constraintEnd_toEndOf="@id/participants_list"/>
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/fetch_in_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:visibility="@{viewModel.isComputingParticipantsList ? View.VISIBLE : View.GONE}"
+            app:indicatorColor="?attr/color_main1_500"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/participants_list"
+            app:layout_constraintBottom_toBottomOf="@id/participants_list" />
+
+        <ImageView
+            android:id="@+id/participants_close"
+            android:onClick="@{() -> viewModel.closeParticipantsList()}"
+            android:layout_width="@dimen/icon_size"
+            android:layout_height="@dimen/icon_size"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:src="@drawable/x"
+            android:contentDescription="@string/content_description_chat_close_participants_list"
+            app:tint="@color/icon_color_selector"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/participants_separator" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

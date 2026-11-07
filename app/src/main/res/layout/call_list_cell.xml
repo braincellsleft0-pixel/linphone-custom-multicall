@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="onClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="onLongClickListener"
+            type="View.OnLongClickListener" />
+        <variable
+            name="model"
+            type="org.linphone.ui.call.model.CallModel" />
+        <variable
+            name="showTransferIcon"
+            type="Boolean" />
+    </data>
+
+    <LinearLayout
+        android:onClick="@{onClickListener}"
+        android:onLongClick="@{onLongClickListener}"
+        android:onContextClick="@{onLongClickListener}"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="46dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="2dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="10dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:background="@{model.isCurrent ? @drawable/in_call_item_selected_background : @drawable/in_call_item_background}"
+        android:clickable="true"
+        android:focusable="true">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/call_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:text="@{model.statusTag, default=`(Hold)`}"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="@{model.isBusy || model.isOff ? @color/red_danger_500 : model.isPaused ? @color/orange_main_500 : @color/green_success_500}" />
+
+            <TextView
+                android:id="@+id/phone_number"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@{model.phoneNumber, default=`+8801700000000`}"
+                android:textColor="@color/bc_white"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/call_duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:text="@{model.durationText, default=``}"
+                android:textColor="@{model.isBusy || model.isOff ? @color/red_danger_500 : model.isPaused ? @color/orange_main_500 : @color/green_success_500}"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <!-- Red Disconnect/Hangup Button with Full Touch Target -->
+        <ImageView
+            android:id="@+id/btn_hangup_cell"
+            android:onClick="@{() -> model.hangUp()}"
+            android:layout_width="54dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="4dp"
+            android:padding="9dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/phone_disconnect"
+            android:background="@drawable/squircle_red_button_background"
+            android:contentDescription="@string/content_description_hang_up_call"
+            android:visibility="@{model.isEnded ? View.INVISIBLE : View.VISIBLE}"
+            app:tint="@color/bc_white" />
+
+    </LinearLayout>
+
+</layout>

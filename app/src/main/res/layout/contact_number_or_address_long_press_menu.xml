@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="copyNumberOrAddressClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="inviteNumberOrAddressClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="isSip"
+            type="Boolean" />
+        <variable
+            name="hideInvite"
+            type="Boolean" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/color_separator">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:onClick="@{copyNumberOrAddressClickListener}"
+            style="@style/context_menu_action_label_style"
+            android:id="@+id/copy"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@{isSip ? @string/menu_copy_sip_address : @string/menu_copy_phone_number, default=@string/menu_copy_sip_address}"
+            android:background="@drawable/menu_item_background"
+            android:layout_marginBottom="1dp"
+            android:drawableStart="@drawable/copy"
+            app:layout_constraintBottom_toTopOf="@id/invite"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:onClick="@{inviteNumberOrAddressClickListener}"
+            style="@style/context_menu_action_label_style"
+            android:visibility="@{isSip || hideInvite ? View.GONE : View.VISIBLE}"
+            android:id="@+id/invite"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/menu_invite"
+            android:background="@drawable/menu_item_background"
+            android:layout_marginBottom="1dp"
+            android:drawableStart="@drawable/envelope_simple_open"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

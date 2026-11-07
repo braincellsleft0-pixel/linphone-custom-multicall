@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/tools">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="viewModel"
+            type="org.linphone.ui.call.viewmodel.CurrentCallViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/gray_900">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/call_header_style"
+            android:id="@+id/call_direction_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="@{viewModel.terminatedByUser ? @string/call_locally_ended : @string/call_remotely_ended, default=@string/call_locally_ended}"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/call_media_encryption_info" />
+
+        <include
+            android:id="@+id/call_media_encryption_info"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:visibility="@{viewModel.callDuration > 0 ? View.VISIBLE : View.INVISIBLE, default=invisible}"
+            layout="@layout/call_media_encryption_info"
+            bind:viewModel="@{viewModel}"
+            app:layout_constraintTop_toBottomOf="@id/call_direction_label"
+            app:layout_constraintStart_toStartOf="@id/call_direction_label"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <include
+            android:id="@+id/avatar"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            layout="@layout/contact_avatar_huge"
+            bind:model="@{viewModel.contact}"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintWidth_max="@dimen/avatar_in_call_size"
+            app:layout_constraintHeight_max="@dimen/avatar_in_call_size"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/call_direction_label"
+            app:layout_constraintBottom_toTopOf="@id/name" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style_300"
+            android:id="@+id/name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:text="@{viewModel.displayedName, default=`John Doe`}"
+            android:textColor="@color/bc_white"
+            android:textSize="22sp"
+            app:layout_constraintTop_toBottomOf="@id/avatar"
+            app:layout_constraintBottom_toTopOf="@id/address"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style"
+            android:id="@+id/address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:text="@{viewModel.displayedAddress, default=`sip:johndoe@sip.linphone.org`}"
+            android:textColor="@color/bc_white"
+            android:textSize="14sp"
+            android:visibility="@{viewModel.hideSipAddresses || viewModel.conferenceModel.isCurrentCallInConference ? View.GONE : View.VISIBLE}"
+            app:layout_constraintTop_toBottomOf="@id/name"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <include
+            android:id="@+id/bottom_bar"
+            layout="@layout/call_ended_actions"
+            bind:viewModel="@{viewModel}"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/call_main_actions_menu_height"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="backClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="androidSettingsClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="viewModel"
+            type="org.linphone.ui.main.settings.viewmodel.SettingsViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/color_background_contrast_in_dark_mode">
+
+        <ImageView
+            style="@style/icon_top_bar_button_style"
+            android:id="@+id/back"
+            android:onClick="@{backClickListener}"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:src="@drawable/caret_left"
+            android:contentDescription="@string/content_description_go_back_icon"
+            app:tint="?attr/color_main1_500"
+            app:layout_constraintBottom_toBottomOf="@id/title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/title" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/main_page_title_style"
+            android:id="@+id/title"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/top_bar_height"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:text="@string/settings_advanced_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/back"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <ScrollView
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:fillViewport="true"
+            android:background="?attr/color_grey_100"
+            app:layout_constraintTop_toBottomOf="@id/title"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="@dimen/screen_bottom_margin">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/main_section"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/shape_squircle_white_background"
+                    app:layout_constraintWidth_max="@dimen/section_max_width"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        style="@style/settings_title_style"
+                        android:id="@+id/crashlytics_title"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="10dp"
+                        android:text="@string/settings_advanced_print_logs_crashlytics_title"
+                        android:maxLines="3"
+                        android:ellipsize="end"
+                        android:labelFor="@id/crashlytics_switch"
+                        android:visibility="@{viewModel.isCrashlyticsAvailable ? View.VISIBLE : View.GONE}"
+                        app:layout_constraintTop_toTopOf="@id/crashlytics_switch"
+                        app:layout_constraintBottom_toBottomOf="@id/crashlytics_switch"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/crashlytics_switch"/>
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        style="@style/material_switch_style"
+                        android:id="@+id/crashlytics_switch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginEnd="16dp"
+                        android:checked="@{viewModel.sendLogsToCrashlytics}"
+                        android:onClick="@{() -> viewModel.toggleSendLogsToCrashlytics()}"
+                        android:visibility="@{viewModel.isCrashlyticsAvailable ? View.VISIBLE : View.GONE}"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"/>
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        style="@style/settings_title_style"
+                        android:id="@+id/start_at_boot_title"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="10dp"
+                        android:text="@string/settings_advanced_start_at_boot_title"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:labelFor="@id/start_at_boot_switch"
+                        app:layout_constraintTop_toTopOf="@id/start_at_boot_switch"
+                        app:layout_constraintBottom_toBottomOf="@id/start_at_boot_switch"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/start_at_boot_switch"/>
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        style="@style/material_switch_style"
+                        android:id="@+id/start_at_boot_switch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginEnd="16dp"
+                        android:checked="@{viewModel.startAtBoot}"
+                        android:onClick="@{() -> viewModel.toggleStartAtBoot()}"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/crashlytics_switch"/>
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        style="@style/settings_title_style"
+                        android:id="@+id/keep_alive_service_title"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="10dp"
+                        android:text="@string/settings_advanced_keep_alive_service_title"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:labelFor="@id/keep_alive_service_switch"
+                        app:layout_constraintTop_toTopOf="@id/keep_alive_service_switch"
+                        app:layout_constraintBottom_toBottomOf="@id/keep_alive_service_switch"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/keep_alive_service_switch"/>
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        style="@style/material_switch_style"
+                        android:id="@+id/keep_alive_service_switch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginEnd="16dp"
+                        android:checked="@{viewModel.keepAliveThirdPartyAccountsService}"
+                        android:onClick="@{() -> viewModel.toggleKeepAliveThirdPartyAccountService()}"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/start_at_boot_switch"/>
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        style="@style/settings_title_padding_style"
+                        android:id="@+id/device_id_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="20dp"
+                        android:text="@string/settings_advanced_device_id"
+                        android:labelFor="@id/device_id"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/keep_alive_service_switch"/>
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        style="@style/default_text_style"
+                        android:id="@+id/device_id"
+                        android:layout_width="0dp"
+                        android:layout_height="50dp"
+                        android:layout_marginEnd="16dp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:text="@={viewModel.deviceName}"
+                        android:textSize="14sp"
+                        android:maxLines="1"
+                        android:background="@drawable/edit_text_background"
+                        android:inputType="text|textUri"
+                        android:hint="@string/settings_advanced_device_id_hint"
+                        app:layout_constraintHorizontal_bias="0"
+                        app:layout_constraintTop_toBottomOf="@id/device_id_label"
+                        app:layout_constraintStart_toStartOf="@id/device_id_label"
+                        app:layout_constraintEnd_toEndOf="parent"/>
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        style="@style/settings_title_padding_style"
+                        android:id="@+id/remote_provisioning_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="20dp"
+                        android:text="@string/settings_advanced_remote_provisioning_url"
+                        android:labelFor="@id/remote_provisioning"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/device_id"/>
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        style="@style/default_text_style"
+                        android:id="@+id/remote_provisioning"
+                        android:layout_width="0dp"
+                        android:layout_height="50dp"
+                        android:layout_marginEnd="16dp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:text="@={viewModel.remoteProvisioningUrl}"
+                        android:textSize="14sp"
+                        android:maxLines="1"
+                        android:background="@drawable/edit_text_background"
+                        android:inputType="text|textUri"
+                        android:hint="@string/settings_advanced_remote_provisioning_url"
+                        app:layout_constraintHorizontal_bias="0"
+                        app:layout_constraintTop_toBottomOf="@id/remote_provisioning_label"
+                        app:layout_constraintStart_toStartOf="@id/remote_provisioning_label"
+                        app:layout_constraintEnd_toEndOf="parent"/>
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        style="@style/tertiary_button_label_style"
+                        android:id="@+id/download_and_apply"
+                        android:onClick="@{() -> viewModel.downloadAndApplyRemoteProvisioning()}"
+                        android:enabled="@{viewModel.remoteProvisioningUrl.length() != 0, default=false}"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginBottom="20dp"
+                        android:background="@drawable/tertiary_button_background"
+                        android:gravity="center"
+                        android:text="@string/settings_advanced_download_apply_remote_provisioning"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/remote_provisioning"
+                        app:layout_constraintBottom_toBottomOf="parent"/>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/section_header_style"
+                    android:id="@+id/audio_devices_title"
+                    android:onClick="@{() -> viewModel.toggleAudioDevicesExpand()}"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:padding="10dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/settings_advanced_audio_devices_title"
+                    android:drawableEnd="@{viewModel.expandAudioDevices ? @drawable/caret_up : @drawable/caret_down, default=@drawable/caret_up}"
+                    android:drawableTint="?attr/color_main2_600"
+                    android:background="@drawable/squircle_transparent_button_background"
+                    app:layout_constraintWidth_max="@dimen/section_max_width"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/main_section"/>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/audio_devices"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:paddingBottom="16dp"
+                    android:background="@drawable/shape_squircle_white_background"
+                    android:orientation="vertical"
+                    android:visibility="@{viewModel.expandAudioDevices ? View.VISIBLE : View.GONE, default=gone}"
+                    app:layout_constraintWidth_max="@dimen/section_max_width"
+                    app:layout_constraintTop_toBottomOf="@id/audio_devices_title"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        style="@style/settings_title_padding_style"
+                        android:id="@+id/input_audio_device_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="20dp"
+                        android:text="@string/settings_advanced_input_audio_device_title"
+                        android:visibility="@{viewModel.expandAudioDevices ? View.VISIBLE : View.GONE}"
+                        android:labelFor="@id/input_audio_device"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"/>
+
+                    <androidx.appcompat.widget.AppCompatSpinner
+                        style="@style/default_text_style"
+                        android:id="@+id/input_audio_device"
+                        android:layout_width="0dp"
+                        android:layout_height="50dp"
+                        android:layout_marginEnd="16dp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:textSize="14sp"
+                        android:textColor="@color/gray_main2_600"
+                        android:gravity="center_vertical"
+                        android:overlapAnchor="false"
+                        android:dropDownVerticalOffset="25dp"
+                        android:spinnerMode="dropdown"
+                        android:popupBackground="@drawable/shape_squircle_white_background"
+                        android:background="@drawable/edit_text_background"
+                        android:visibility="@{viewModel.expandAudioDevices ? View.VISIBLE : View.GONE}"
+                        app:layout_constraintHorizontal_bias="0"
+                        app:layout_constraintTop_toBottomOf="@id/input_audio_device_label"
+                        app:layout_constraintStart_toStartOf="@id/input_audio_device_label"
+                        app:layout_constraintEnd_toEndOf="parent" />
+
+                    <ImageView
+                        android:id="@+id/input_audio_device_caret"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="16dp"
+                        android:src="@drawable/caret_down"
+                        android:contentDescription="@null"
+                        android:visibility="@{viewModel.expandAudioDevices ? View.VISIBLE : View.GONE}"
+                        app:tint="?attr/color_main2_600"
+                        app:layout_constraintTop_toTopOf="@id/input_audio_device"
+                        app:layout_constraintBottom_toBottomOf="@id/input_audio_device"
+                        app:layout_constraintEnd_toEndOf="@id/input_audio_device"/>
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        style="@style/settings_title_padding_style"
+                        android:id="@+id/output_audio_device_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="20dp"
+                        android:text="@string/settings_advanced_output_audio_device_title"
+                        android:visibility="@{viewModel.expandAudioDevices ? View.VISIBLE : View.GONE}"
+                        android:labelFor="@id/output_audio_device"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/input_audio_device"/>
+
+                    <androidx.appcompat.widget.AppCompatSpinner
+                        style="@style/default_text_style"
+                        android:id="@+id/output_audio_device"
+                        android:layout_width="0dp"
+                        android:layout_height="50dp"
+                        android:layout_marginEnd="16dp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:textSize="14sp"
+                        android:textColor="@color/gray_main2_600"
+                        android:gravity="center_vertical"
+                        android:overlapAnchor="false"
+                        android:dropDownVerticalOffset="25dp"
+                        android:spinnerMode="dropdown"
+                        android:popupBackground="@drawable/shape_squircle_white_background"
+                        android:background="@drawable/edit_text_background"
+                        android:visibility="@{viewModel.expandAudioDevices ? View.VISIBLE : View.GONE}"
+                        app:layout_constraintHorizontal_bias="0"
+                        app:layout_constraintTop_toBottomOf="@id/output_audio_device_label"
+                        app:layout_constraintStart_toStartOf="@id/output_audio_device_label"
+                        app:layout_constraintEnd_toEndOf="parent" />
+
+                    <ImageView
+                        android:id="@+id/output_audio_device_caret"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="16dp"
+                        android:src="@drawable/caret_down"
+                        android:contentDescription="@null"
+                        android:visibility="@{viewModel.expandAudioDevices ? View.VISIBLE : View.GONE}"
+                        app:tint="?attr/color_main2_600"
+                        app:layout_constraintTop_toTopOf="@id/output_audio_device"
+                        app:layout_constraintBottom_toBottomOf="@id/output_audio_device"
+                        app:layout_constraintEnd_toEndOf="@id/output_audio_device"/>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/settings_title_style"
+                    android:id="@+id/android_settings"
+                    android:onClick="@{androidSettingsClickListener}"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="@dimen/screen_bottom_margin"
+                    android:text="@string/settings_advanced_go_to_android_app_settings_title"
+                    android:drawableEnd="@drawable/arrow_square_out"
+                    android:drawableTint="?attr/color_main2_600"
+                    android:background="@drawable/squircle_transparent_button_background"
+                    app:layout_constraintWidth_max="@dimen/section_max_width"
+                    app:layout_constraintVertical_bias="0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/audio_devices"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </ScrollView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

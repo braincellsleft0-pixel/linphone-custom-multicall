@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="zero">0dp</dimen>
+    <dimen name="five">5dp</dimen>
+
+    <dimen name="screen_bottom_margin">10dp</dimen>
+
+    <dimen name="landscape_nav_bar_width">80dp</dimen>
+    <dimen name="sliding_pane_left_fragment_width">350dp</dimen>
+    <dimen name="sliding_pane_right_fragment_width">300dp</dimen>
+
+    <dimen name="small_icon_size">14dp</dimen>
+    <dimen name="icon_size">24dp</dimen>
+    <dimen name="large_icon_size">32dp</dimen>
+    <dimen name="big_icon_size">48dp</dimen>
+    <dimen name="welcome_icon_size">100dp</dimen>
+    <dimen name="assistant_title_top_margin">30dp</dimen>
+
+    <dimen name="avatar_bubble_size">30dp</dimen>
+    <dimen name="avatar_list_cell_size">45dp</dimen>
+    <dimen name="avatar_favorite_list_cell_size">50dp</dimen>
+    <dimen name="avatar_big_size">100dp</dimen>
+    <dimen name="avatar_in_call_size">120dp</dimen>
+
+    <dimen name="avatar_bubble_presence_badge_size">8dp</dimen>
+    <dimen name="avatar_presence_badge_size">12dp</dimen>
+    <dimen name="avatar_presence_badge_in_call_size">26dp</dimen>
+    <dimen name="avatar_presence_badge_padding">2dp</dimen>
+    <dimen name="avatar_presence_badge_end_margin">3dp</dimen>
+    <dimen name="avatar_presence_badge_big_size">22dp</dimen>
+    <dimen name="avatar_presence_badge_big_padding">3dp</dimen>
+    <dimen name="avatar_presence_badge_big_end_margin">5dp</dimen>
+    <dimen name="avatar_presence_badge_in_call_end_margin">6dp</dimen>
+
+    <dimen name="avatar_trust_border_width">5dp</dimen>
+    <dimen name="avatar_large_trust_border_width">3dp</dimen>
+
+    <dimen name="avatar_initials_text_size">16sp</dimen>
+    <dimen name="avatar_initials_bubble_text_size">14sp</dimen>
+    <dimen name="avatar_initials_big_text_size">21sp</dimen>
+    <dimen name="avatar_initials_call_text_size">36sp</dimen>
+
+    <dimen name="selected_participant_cell_height">90dp</dimen>
+
+    <dimen name="primary_secondary_buttons_label_padding">11dp</dimen>
+    <dimen name="primary_secondary_buttons_label_start_end_padding">20dp</dimen>
+    <dimen name="tertiary_buttons_label_top_bottom_padding">6dp</dimen>
+    <dimen name="tertiary_buttons_label_start_end_padding">12dp</dimen>
+    <dimen name="dialog_top_bottom_margin">20dp</dimen>
+
+    <dimen name="top_bar_rounded_corner_radius">20dp</dimen>
+    <dimen name="top_list_item_rounded_corner_radius">20dp</dimen>
+    <dimen name="top_bar_shadow_height">54dp</dimen>
+    <dimen name="top_bar_height">55dp</dimen>
+    <dimen name="toast_top_margin">70dp</dimen> <!-- 15dp + top_bar_height -->
+    <dimen name="section_max_width">400dp</dimen>
+    <dimen name="toast_max_width">400dp</dimen>
+    <dimen name="toast_text_max_width">350dp</dimen>
+    <dimen name="button_max_width">400dp</dimen>
+    <dimen name="dialog_max_width">400dp</dimen>
+    <dimen name="text_input_max_width">400dp</dimen>
+    <dimen name="emoji_list_max_width">400dp</dimen>
+    <dimen name="popup_menu_width">250dp</dimen>
+    <dimen name="popup_menu_padding">10dp</dimen>
+    <dimen name="bottom_nav_bar_label_text_size">11sp</dimen>
+
+    <dimen name="call_remote_video_top_margin">70dp</dimen> <!-- Size of top text + top & bottom margins -->
+    <dimen name="call_main_actions_menu_height">110dp</dimen>
+    <dimen name="call_all_actions_menu_height">345dp</dimen> <!-- sum of above two -->
+    <dimen name="call_main_actions_menu_margin">115dp</dimen>
+    <dimen name="call_round_corners_texture_view_radius">20dp</dimen>
+    <dimen name="call_pip_round_corners_texture_view_radius">5dp</dimen>
+    <dimen name="call_button_size">55dp</dimen>
+    <dimen name="sliding_accept_decline_call_margin">10dp</dimen>
+    <dimen name="call_button_icon_padding">15dp</dimen>
+    <dimen name="call_dtmf_button_size">65dp</dimen>
+    <dimen name="call_dtmf_button_max_width">120dp</dimen>
+    <dimen name="call_extra_button_top_margin">30dp</dimen>
+
+    <dimen name="call_video_preview_max_size">200dp</dimen>
+    <dimen name="call_video_preview_pip_max_size">45dp</dimen>
+
+    <dimen name="call_conference_audio_only_miniature_height">100dp</dimen>
+    <dimen name="call_conference_active_speaker_miniature_size">124dp</dimen>
+
+    <dimen name="meeting_list_decoration_height">66dp</dimen>
+    <dimen name="meeting_margin">8dp</dimen>
+
+    <dimen name="chat_bubble_grouped_top_margin">2dp</dimen>
+    <dimen name="chat_bubble_top_margin">8dp</dimen>
+    <dimen name="chat_bubble_grouped_bottom_margin">2dp</dimen>
+    <dimen name="chat_bubble_bottom_margin">8dp</dimen>
+    <dimen name="chat_bubble_text_size">14sp</dimen>
+    <dimen name="chat_bubble_emoji_only_text_size">45sp</dimen>
+    <dimen name="chat_bubble_long_press_emoji_reaction_size">25dp</dimen>
+    <dimen name="chat_bubble_big_image_max_size">350dp</dimen> <!-- (87 * 4)  -->
+    <dimen name="chat_bubble_grid_file_size">87dp</dimen>
+    <dimen name="chat_bubble_single_file_width">178dp</dimen> <!-- (87 + 2) * 2  -->
+    <dimen name="chat_bubble_meeting_invite_width">271dp</dimen>
+    <dimen name="chat_bubble_voice_record_width">230dp</dimen>
+    <dimen name="chat_bubble_max_reply_width">271dp</dimen>
+    <dimen name="chat_bubble_images_rounded_corner_radius">5dp</dimen>
+    <dimen name="chat_bubble_start_margin_when_avatar_displayed">10dp</dimen>
+    <dimen name="chat_conversation_header_avatar_start_margin_if_back_button">5dp</dimen>
+    <dimen name="chat_conversation_header_avatar_start_margin_if_no_back_button">15dp</dimen>
+    <dimen name="unread_count_indicator_size">24dp</dimen>
+    <dimen name="chat_documents_list_padding_top_bottom">5dp</dimen>
+    <dimen name="chat_documents_list_padding_start_end">10dp</dimen>
+
+    <dimen name="chat_room_emoji_picker_height">300dp</dimen>
+    <dimen name="chat_room_participants_list_max_height">200dp</dimen>
+    <dimen name="chat_bubble_emoji_picker_height">425dp</dimen>
+
+    <dimen name="spinner_start_padding">15dp</dimen>
+    <dimen name="spinner_end_padding">30dp</dimen>
+    <dimen name="spinner_caret_end_margin">15dp</dimen>
+
+    <integer name="media_columns">4</integer>
+</resources>

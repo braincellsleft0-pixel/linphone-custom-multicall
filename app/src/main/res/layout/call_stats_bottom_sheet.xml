@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="viewModel"
+            type="org.linphone.ui.call.viewmodel.CurrentCallViewModel" />
+        <variable
+            name="model"
+            type="org.linphone.ui.call.model.CallStatsModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/shape_call_bottom_sheet_background"
+        android:visibility="@{viewModel.fullScreenMode || viewModel.pipMode ? View.INVISIBLE : View.VISIBLE}"
+        app:behavior_hideable="true"
+        app:behavior_peekHeight="0dp"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+        <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+            android:id="@+id/call_stats_handle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:padding="11dp"
+            android:src="@drawable/shape_drawer_handle"
+            app:tint="@color/bc_white"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <LinearLayout
+            android:id="@+id/audio_stats"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/shape_squircle_gray_600_background"
+            app:layout_constraintTop_toBottomOf="@id/call_stats_handle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/video_stats"
+            android:orientation="vertical">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/default_text_style_700"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/call_stats_audio_title"
+                android:textSize="12sp"
+                android:textColor="@color/bc_white"
+                android:gravity="center" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/default_text_style"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@{model.audioCodec, default=@string/call_stats_codec_label}"
+                android:textColor="@color/bc_white"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:gravity="center" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/default_text_style"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@{model.audioBandwidth, default=@string/call_stats_bandwidth_label}"
+                android:textColor="@color/bc_white"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:gravity="center" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/default_text_style"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@{model.audioIce, default=@string/call_stats_ice_label}"
+                android:textColor="@color/bc_white"
+                android:visibility="@{model.showAdvancedStats ? View.VISIBLE : View.GONE, default=gone}"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:gravity="center" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/default_text_style"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@{model.audioIpFamily, default=@string/call_stats_ip_family_label}"
+                android:textColor="@color/bc_white"
+                android:visibility="@{model.showAdvancedStats ? View.VISIBLE : View.GONE, default=gone}"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:gravity="center" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/default_text_style"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@{model.lossRate, default=@string/call_stats_loss_rate_label}"
+                android:textColor="@color/bc_white"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:gravity="center" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/default_text_style"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:text="@{model.jitterBuffer, default=@string/call_stats_jitter_buffer_label}"
+                android:textColor="@color/bc_white"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:gravity="center" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/video_stats"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/shape_squircle_gray_600_background"
+            android:visibility="@{model.isVideoEnabled ? View.VISIBLE : View.GONE}"
+            app:layout_constraintTop_toBottomOf="@id/audio_stats"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/fec_stats"
+            android:orientation="vertical">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/default_text_style_700"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/call_stats_video_title"
+                android:textSize="12sp"
+                android:textColor="@color/bc_white"
+                android:gravity="center" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/default_text_style"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@{model.videoCodec, default=@string/call_stats_codec_label}"
+                android:textColor="@color/bc_white"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:gravity="center" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/default_text_style"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@{model.videoBandwidth, default=@string/call_stats_bandwidth_label}"
+                android:textColor="@color/bc_white"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:gravity="center" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/default_text_style"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@{model.videoIce, default=@string/call_stats_ice_label}"
+                android:textColor="@color/bc_white"
+                android:visibility="@{model.showAdvancedStats ? View.VISIBLE : View.GONE, default=gone}"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:gravity="center" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/default_text_style"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@{model.videoIpFamily, default=@string/call_stats_ip_family_label}"
+                android:textColor="@color/bc_white"
+                android:visibility="@{model.showAdvancedStats ? View.VISIBLE : View.GONE, default=gone}"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:gravity="center" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/default_text_style"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@{model.videoLossRate, default=@string/call_stats_loss_rate_label}"
+                android:textColor="@color/bc_white"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:gravity="center" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/default_text_style"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@{model.videoResolution, default=@string/call_stats_resolution_label}"
+                android:textColor="@color/bc_white"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:gravity="center" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/default_text_style"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:text="@{model.videoFps, default=@string/call_stats_fps_label}"
+                android:textColor="@color/bc_white"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:gravity="center" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/fec_stats"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/shape_squircle_gray_600_background"
+            android:visibility="@{model.fecEnabled ? View.VISIBLE : View.GONE}"
+            app:layout_constraintTop_toBottomOf="@id/video_stats"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:orientation="vertical">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/default_text_style_700"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/call_stats_fec_title"
+                android:textSize="12sp"
+                android:textColor="@color/bc_white"
+                android:gravity="center" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/default_text_style"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@{model.lostPackets, default=@string/call_stats_fec_lost_packets_label}"
+                android:textColor="@color/bc_white"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:gravity="center" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/default_text_style"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@{model.repairedPackets, default=@string/call_stats_fec_repaired_packets_label}"
+                android:textColor="@color/bc_white"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:gravity="center" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/default_text_style"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@{model.fecBandwidth, default=@string/call_stats_fec_lost_bandwidth_label}"
+                android:textColor="@color/bc_white"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:gravity="center" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="viewModel"
+            type="org.linphone.ui.main.chat.viewmodel.SendMessageInConversationViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/color_main2_000">
+
+        <View
+            android:id="@+id/attachments_separator"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?attr/color_separator"
+            android:importantForAccessibility="no"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <com.google.android.flexbox.FlexboxLayout
+            android:id="@+id/files"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:alignItems="center"
+            app:flexWrap="wrap"
+            app:justifyContent="flex_start"
+            entries="@{viewModel.attachments}"
+            layout="@{@layout/chat_conversation_attachments_area_cell}"
+            app:layout_constraintTop_toBottomOf="@id/attachments_separator"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <ImageView
+            android:id="@+id/attachments_close"
+            android:onClick="@{() -> viewModel.closeFileAttachmentsList()}"
+            android:layout_width="@dimen/icon_size"
+            android:layout_height="@dimen/icon_size"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:src="@drawable/x"
+            android:contentDescription="@string/content_description_chat_remove_attachments"
+            app:tint="@color/icon_color_selector"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/attachments_separator" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

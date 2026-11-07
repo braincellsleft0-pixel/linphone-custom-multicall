@@ -1,0 +1,167 @@
+/*
+ * Copyright (c) 2010-2023 Belledonne Communications SARL.
+ *
+ * This file is part of linphone-android
+ * (see https://www.linphone.org).
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.linphone.ui.assistant
+
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Bundle
+import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.enableEdgeToEdge
+import androidx.annotation.UiThread
+import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.doOnPreDraw
+import androidx.core.view.updatePadding
+import androidx.databinding.DataBindingUtil
+import androidx.navigation.findNavController
+import kotlin.math.max
+import org.linphone.LinphoneApplication.Companion.coreContext
+import org.linphone.R
+import org.linphone.compatibility.Compatibility
+import org.linphone.core.tools.Log
+import org.linphone.databinding.AssistantActivityBinding
+import org.linphone.ui.GenericActivity
+import org.linphone.ui.assistant.fragment.PermissionsFragmentDirections
+import org.linphone.ui.sso.SingleSignOnActivity
+
+@UiThread
+class AssistantActivity : GenericActivity() {
+    companion object {
+        private const val TAG = "[Assistant Activity]"
+
+        const val SKIP_LANDING_EXTRA = "SkipLandingIfAtLeastAnAccount"
+    }
+
+    private lateinit var binding: AssistantActivityBinding
+
+    private val backPressedCallback = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            val navController = binding.assistantNavContainer.findNavController()
+            if (navController.currentDestination?.id != R.id.landingFragment) {
+                navController.popBackStack()
+            }
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
+
+        binding = DataBindingUtil.setContentView(this, R.layout.assistant_activity)
+        binding.lifecycleOwner = this
+        setUpToastsArea(binding.toastsArea)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.assistantNavContainer) { v, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val keyboard = windowInsets.getInsets(WindowInsetsCompat.Type.ime())
+            v.updatePadding(
+                insets.left,
+                insets.top,
+                insets.right,
+                max(insets.bottom, keyboard.bottom)
+            )
+            WindowInsetsCompat.CONSUMED
+        }
+
+        coreContext.postOnCoreThread { core ->
+            if (core.accountList.isEmpty()) {
+                Log.i("$TAG No account configured, disabling back gesture")
+                coreContext.postOnMainThread {
+                    // Only allow to navigate back within the assistant nav controller,
+                    // not to leave the AssistantActivity
+                    onBackPressedDispatcher.addCallback(backPressedCallback)
+                }
+            }
+        }
+
+        coreContext.mdmConfigAppliedEvent.observe(this) {
+            it.consume {
+                Log.i("$TAG Managed configuration applied, checking for accounts")
+                leaveAssistantIfAnAccountIsConfigured()
+            }
+        }
+
+        coreContext.provisioningAppliedEvent.observe(this) {
+            it.consume {
+                Log.i("$TAG Provisioning applied, checking for accounts")
+                leaveAssistantIfAnAccountIsConfigured()
+            }
+        }
+        
+        coreContext.bearerAuthenticationRequestedEvent.observe(this) {
+            it.consume { pair ->
+                val serverUrl = pair.first
+                val username = pair.second
+                Log.i(
+                    "$TAG Bearer auth request, navigating to Single Sign On Fragment with server URL [$serverUrl] and username [$username]"
+                )
+                val intent = Intent(this, SingleSignOnActivity::class.java)
+                intent.putExtra(SingleSignOnActivity.INTENT_EXTRA_USERNAME, username)
+                intent.putExtra(SingleSignOnActivity.INTENT_EXTRA_SERVER_URL, serverUrl)
+                startActivity(intent)
+            }
+        }
+
+        (binding.root as? ViewGroup)?.doOnPreDraw {
+            if (!areAllPermissionsGranted()) {
+                Log.w("$TAG Not all required permissions are granted, showing Permissions fragment")
+                val action = PermissionsFragmentDirections.actionGlobalPermissionsFragment()
+                binding.assistantNavContainer.findNavController().navigate(action)
+            } else if (intent.getBooleanExtra(SKIP_LANDING_EXTRA, false)) {
+                Log.w(
+                    "$TAG We were asked to leave assistant if at least an account is already configured"
+                )
+                leaveAssistantIfAnAccountIsConfigured()
+            }
+        }
+    }
+
+    private fun areAllPermissionsGranted(): Boolean {
+        for (permission in Compatibility.getAllRequiredPermissionsArray()) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                Log.w("$TAG Permission [$permission] hasn't been granted yet!")
+                return false
+            }
+        }
+
+        val granted = Compatibility.hasFullScreenIntentPermission(this)
+        if (granted) {
+            Log.i("$TAG All permissions have been granted!")
+        }
+        return granted
+    }
+
+    private fun leaveAssistantIfAnAccountIsConfigured() {
+        coreContext.postOnCoreThread { core ->
+            if (core.accountList.isNotEmpty()) {
+                coreContext.postOnMainThread {
+                    try {
+                        Log.w("$TAG At least one account was found, leaving assistant")
+                        finish()
+                    } catch (ise: IllegalStateException) {
+                        Log.e("$TAG Can't finish activity: $ise")
+                    }
+                }
+            }
+        }
+    }
+}

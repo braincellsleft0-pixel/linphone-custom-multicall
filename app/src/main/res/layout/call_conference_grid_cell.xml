@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/tools">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="model"
+            type="org.linphone.ui.call.conference.model.ConferenceParticipantDeviceModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="8dp"
+        app:layout_constraintDimensionRatio="1:1">
+
+        <ImageView
+            android:id="@+id/participant_device_background"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@null"
+            android:background="@drawable/shape_round_in_call_cell_gray_background" />
+
+        <include
+            android:id="@+id/avatar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="@{model.isThumbnailAvailable || model.isJoining || !model.isInConference ? View.GONE : View.VISIBLE}"
+            layout="@layout/contact_avatar_big"
+            bind:model="@{model.avatarModel}"
+            bind:hidePresence="@{true}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <org.linphone.ui.call.view.RoundCornersTextureView
+            android:id="@+id/participant_video_surface"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:alignTopRight="false"
+            app:displayMode="hybrid"
+            participantTextureView="@{model}"
+            android:visibility="@{model.isThumbnailAvailable &amp;&amp; model.isInConference ? View.VISIBLE : View.GONE, default=gone}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/joining"
+            android:layout_width="@dimen/big_icon_size"
+            android:layout_height="@dimen/big_icon_size"
+            android:indeterminate="true"
+            android:visibility="@{model.isJoining ? View.VISIBLE : View.GONE, default=gone}"
+            app:indicatorColor="@color/bc_white"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/joining_label" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style"
+            android:id="@+id/joining_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/conference_participant_joining_text"
+            android:textColor="@color/bc_white"
+            android:textSize="16sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:visibility="@{model.isJoining ? View.VISIBLE : View.GONE, default=gone}"
+            app:layout_constraintTop_toBottomOf="@id/joining"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <ImageView
+            android:id="@+id/paused"
+            android:layout_width="@dimen/big_icon_size"
+            android:layout_height="@dimen/big_icon_size"
+            android:contentDescription="@null"
+            android:src="@drawable/pause"
+            android:visibility="@{!model.isInConference &amp;&amp; !model.isJoining ? View.VISIBLE : View.GONE, default=gone}"
+            app:tint="@color/bc_white"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/paused_label" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style"
+            android:id="@+id/paused_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/conference_participant_paused_text"
+            android:textColor="@color/bc_white"
+            android:textSize="16sp"
+            android:visibility="@{!model.isInConference &amp;&amp; !model.isJoining ? View.VISIBLE : View.GONE, default=gone}"
+            app:layout_constraintTop_toBottomOf="@id/paused"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <ImageView
+            android:id="@+id/muted"
+            android:layout_width="@dimen/icon_size"
+            android:layout_height="@dimen/icon_size"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:padding="2dp"
+            android:src="@drawable/microphone_slash"
+            android:contentDescription="@string/content_description_conference_participant_muted"
+            android:background="@drawable/shape_circle_white_call_background"
+            android:visibility="@{model.isMuted ? View.VISIBLE : View.GONE}"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style_500"
+            android:id="@+id/name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="8dp"
+            android:text="@{model.name, default=`John Doe`}"
+            android:textColor="@color/bc_white"
+            android:textSize="20sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <ImageView
+            android:id="@+id/speaking"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/shape_squircle_main2_200_call_border"
+            android:contentDescription="@string/content_description_conference_participant_speaking"
+            android:visibility="@{model.isSpeaking ? View.VISIBLE : View.GONE}" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

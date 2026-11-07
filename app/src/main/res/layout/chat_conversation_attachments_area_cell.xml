@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/tools">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="model"
+            type="org.linphone.ui.main.chat.model.FileModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="2dp">
+
+        <include
+            android:id="@+id/media_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            layout="@layout/chat_bubble_media_grid_cell"
+            android:visibility="@{model.isImage || model.isVideoPreview ? View.VISIBLE : View.GONE}"
+            bind:model="@{model}"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <include
+            android:id="@+id/file_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            layout="@layout/chat_bubble_file_grid_cell"
+            android:visibility="@{!model.isImage &amp;&amp; !model.isVideoPreview ? View.VISIBLE : View.GONE}"
+            bind:model="@{model}"
+            bind:useGrayBackground="@{true}"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <ImageView
+            android:id="@+id/remove_attachment"
+            android:onClick="@{() -> model.onClick()}"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="4dp"
+            android:padding="3dp"
+            android:src="@drawable/x"
+            android:background="@drawable/shape_white_round"
+            android:contentDescription="@string/content_description_chat_remove_attachment"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:tint="?attr/color_danger_500" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

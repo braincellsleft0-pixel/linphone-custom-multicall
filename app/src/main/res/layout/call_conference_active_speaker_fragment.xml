@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/tools">
+
+    <data>
+        <import type="android.view.View" />
+        <import type="org.linphone.ui.call.conference.viewmodel.ConferenceViewModel" />
+        <variable
+            name="viewModel"
+            type="org.linphone.ui.call.viewmodel.CurrentCallViewModel" />
+        <variable
+            name="conferenceViewModel"
+            type="org.linphone.ui.call.conference.viewmodel.ConferenceViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraint_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/gray_900">
+
+        <include
+            android:id="@+id/avatar"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            layout="@layout/contact_avatar_huge"
+            android:layout_marginTop="5dp"
+            bind:model="@{conferenceViewModel.activeSpeaker.avatarModel}"
+            android:visibility="@{conferenceViewModel.activeSpeaker.isVideoAvailable || conferenceViewModel.activeSpeaker.isJoining || !conferenceViewModel.activeSpeaker.isInConference ? View.GONE : View.VISIBLE}"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintWidth_max="@dimen/avatar_in_call_size"
+            app:layout_constraintHeight_max="@dimen/avatar_in_call_size"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/active_speaker_name" />
+
+        <org.linphone.ui.call.view.RoundCornersTextureView
+            android:id="@+id/active_speaker_surface"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="@{conferenceViewModel.activeSpeaker.isVideoAvailable &amp;&amp; conferenceViewModel.activeSpeaker.isInConference ? View.VISIBLE : View.GONE, default=gone}"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/active_speaker_miniatures_horizontal_layout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/joining"
+            android:layout_width="@dimen/big_icon_size"
+            android:layout_height="@dimen/big_icon_size"
+            android:indeterminate="true"
+            android:visibility="@{conferenceViewModel.activeSpeaker.isJoining ? View.VISIBLE : View.GONE, default=gone}"
+            app:indicatorColor="@color/bc_white"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/joining_label" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style"
+            android:id="@+id/joining_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/conference_participant_joining_text"
+            android:textColor="@color/bc_white"
+            android:textSize="16sp"
+            android:visibility="@{conferenceViewModel.activeSpeaker.isJoining ? View.VISIBLE : View.GONE, default=gone}"
+            app:layout_constraintTop_toBottomOf="@id/joining"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <ImageView
+            android:id="@+id/paused"
+            android:layout_width="@dimen/big_icon_size"
+            android:layout_height="@dimen/big_icon_size"
+            android:contentDescription="@null"
+            android:src="@drawable/pause"
+            android:visibility="@{!conferenceViewModel.activeSpeaker.isInConference &amp;&amp; !conferenceViewModel.activeSpeaker.isJoining ? View.VISIBLE : View.GONE, default=gone}"
+            app:tint="@color/bc_white"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/paused_label" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style"
+            android:id="@+id/paused_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/conference_participant_paused_text"
+            android:textColor="@color/bc_white"
+            android:textSize="16sp"
+            android:visibility="@{!conferenceViewModel.activeSpeaker.isInConference &amp;&amp; !conferenceViewModel.activeSpeaker.isJoining ? View.VISIBLE : View.GONE, default=gone}"
+            app:layout_constraintTop_toBottomOf="@id/paused"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style_500"
+            android:id="@+id/active_speaker_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginBottom="10dp"
+            android:text="@{conferenceViewModel.isScreenSharing ? conferenceViewModel.screenSharingParticipantName : conferenceViewModel.activeSpeaker.name, default=`John Doe`}"
+            android:textColor="@color/bc_white"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toTopOf="@id/active_speaker_miniatures_horizontal_layout"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style_500"
+            android:id="@+id/active_speaker_screen_sharing"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:text="@string/conference_active_speaker_is_screen_sharing"
+            android:textColor="@color/bc_white"
+            android:textSize="20sp"
+            android:visibility="@{conferenceViewModel.isScreenSharing ? View.VISIBLE : View.GONE, default=gone}"
+            app:layout_constraintBottom_toBottomOf="@id/active_speaker_name"
+            app:layout_constraintTop_toTopOf="@id/active_speaker_name"
+            app:layout_constraintStart_toEndOf="@id/active_speaker_name" />
+
+        <ImageView
+            android:id="@+id/muted"
+            android:layout_width="@dimen/icon_size"
+            android:layout_height="@dimen/icon_size"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:padding="2dp"
+            android:src="@drawable/microphone_slash"
+            android:contentDescription="@string/content_description_conference_participant_muted"
+            android:background="@drawable/shape_circle_white_call_background"
+            android:visibility="@{conferenceViewModel.activeSpeaker.isMuted ? View.VISIBLE : View.GONE, default=gone}"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <HorizontalScrollView
+            android:id="@+id/active_speaker_miniatures_horizontal_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:orientation="horizontal"
+                entries="@{conferenceViewModel.participantDevices}"
+                layout="@{@layout/call_conference_active_speaker_cell}"/>
+
+        </HorizontalScrollView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

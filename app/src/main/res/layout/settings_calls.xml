@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="advancedCallSettingsClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="viewModel"
+            type="org.linphone.ui.main.settings.viewmodel.SettingsViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="20dp"
+        android:background="@drawable/shape_squircle_white_background">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/settings_title_style"
+            android:onClick="@{() -> viewModel.toggleEchoCanceller()}"
+            android:id="@+id/echo_canceller_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="10dp"
+            android:text="@string/settings_calls_echo_canceller_title"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="@id/echo_canceller_switch"
+            app:layout_constraintBottom_toTopOf="@id/echo_canceller_subtitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/echo_canceller_switch"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/settings_subtitle_style"
+            android:onClick="@{() -> viewModel.toggleEchoCanceller()}"
+            android:id="@+id/echo_canceller_subtitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="10dp"
+            android:text="@string/settings_calls_echo_canceller_subtitle"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/echo_canceller_title"
+            app:layout_constraintBottom_toBottomOf="@id/echo_canceller_switch"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/echo_canceller_switch"/>
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            style="@style/material_switch_style"
+            android:id="@+id/echo_canceller_switch"
+            android:onClick="@{() -> viewModel.toggleEchoCanceller()}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="16dp"
+            android:checked="@{viewModel.echoCancellerEnabled}"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/settings_title_style"
+            android:id="@+id/calibrate_echo_canceller"
+            android:onClick="@{() -> viewModel.calibrateEchoCanceller()}"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="@dimen/screen_bottom_margin"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:text="@string/settings_calls_calibrate_echo_canceller_title"
+            app:layout_constraintHorizontal_bias="1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/calibrated_echo_canceller"
+            app:layout_constraintTop_toBottomOf="@id/echo_canceller_subtitle"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/settings_subtitle_style"
+            android:id="@+id/calibrated_echo_canceller"
+            android:onClick="@{() -> viewModel.calibrateEchoCanceller()}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:gravity="center"
+            android:text="@{viewModel.calibratedEchoCancellerValue, default=`0ms`}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/calibrate_echo_canceller"
+            app:layout_constraintBottom_toBottomOf="@id/calibrate_echo_canceller"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/settings_title_style"
+            android:onClick="@{() -> viewModel.toggleAdaptiveRateControl()}"
+            android:id="@+id/adaptive_rate_control_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="10dp"
+            android:text="@string/settings_calls_adaptive_rate_control_title"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:labelFor="@id/adaptive_rate_control_switch"
+            app:layout_constraintTop_toTopOf="@id/adaptive_rate_control_switch"
+            app:layout_constraintBottom_toBottomOf="@id/adaptive_rate_control_switch"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/adaptive_rate_control_switch"/>
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            style="@style/material_switch_style"
+            android:id="@+id/adaptive_rate_control_switch"
+            android:onClick="@{() -> viewModel.toggleAdaptiveRateControl()}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="16dp"
+            android:checked="@{viewModel.adaptiveRateControlEnabled}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/calibrate_echo_canceller" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/settings_title_style"
+            android:onClick="@{() -> viewModel.toggleVibrateOnIncomingCalls()}"
+            android:id="@+id/vibrate_title"
+            android:visibility="@{viewModel.isVibrationAvailable ? View.VISIBLE : View.GONE}"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="10dp"
+            android:text="@string/settings_calls_vibrate_while_ringing_title"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:labelFor="@id/vibrate_switch"
+            app:layout_constraintTop_toTopOf="@id/vibrate_switch"
+            app:layout_constraintBottom_toBottomOf="@id/vibrate_switch"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/vibrate_switch"/>
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            style="@style/material_switch_style"
+            android:id="@+id/vibrate_switch"
+            android:onClick="@{() -> viewModel.toggleVibrateOnIncomingCalls()}"
+            android:visibility="@{viewModel.isVibrationAvailable ? View.VISIBLE : View.GONE}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="16dp"
+            android:checked="@{viewModel.vibrateDuringIncomingCall}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/adaptive_rate_control_switch" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/settings_title_style"
+            android:onClick="@{() -> viewModel.toggleAutoRecordCall()}"
+            android:id="@+id/auto_record_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="10dp"
+            android:text="@string/settings_calls_auto_record_title"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:labelFor="@id/auto_record_switch"
+            app:layout_constraintTop_toTopOf="@id/auto_record_switch"
+            app:layout_constraintBottom_toBottomOf="@id/auto_record_switch"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/auto_record_switch"/>
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            style="@style/material_switch_style"
+            android:id="@+id/auto_record_switch"
+            android:onClick="@{() -> viewModel.toggleAutoRecordCall()}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="16dp"
+            android:checked="@{viewModel.autoRecordCalls}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/vibrate_switch" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/change_ringtone"
+            style="@style/settings_title_style"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/squircle_transparent_button_background"
+            android:drawableEnd="@drawable/arrow_square_out"
+            android:drawableTint="?attr/color_main2_600"
+            android:onClick="@{() -> viewModel.changeRingtone()}"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:text="@string/settings_calls_change_ringtone_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/auto_record_switch" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/settings_title_style"
+            android:onClick="@{() -> viewModel.toggleCallRedirectionService()}"
+            android:id="@+id/call_redirection_service_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="10dp"
+            android:text="@string/settings_calls_use_redirection_service"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:labelFor="@id/call_redirection_service_switch"
+            android:enabled="@{viewModel.callRedirectionServiceAvailable}"
+            app:layout_constraintTop_toTopOf="@id/call_redirection_service_switch"
+            app:layout_constraintBottom_toBottomOf="@id/call_redirection_service_switch"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/call_redirection_service_switch"/>
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            style="@style/material_switch_style"
+            android:id="@+id/call_redirection_service_switch"
+            android:onClick="@{() -> viewModel.toggleCallRedirectionService()}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="16dp"
+            android:checked="@{viewModel.callRedirectionService}"
+            android:enabled="@{viewModel.callRedirectionServiceAvailable}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/change_ringtone" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/settings_title_style"
+            android:id="@+id/advanced_call_settings"
+            android:onClick="@{advancedCallSettingsClickListener}"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="@dimen/screen_bottom_margin"
+            android:text="@string/settings_advanced_calls"
+            android:drawableEnd="@drawable/caret_right"
+            android:drawableTint="?attr/color_main2_600"
+            android:background="@drawable/squircle_transparent_button_background"
+            app:layout_constraintHorizontal_bias="1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/call_redirection_service_switch"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

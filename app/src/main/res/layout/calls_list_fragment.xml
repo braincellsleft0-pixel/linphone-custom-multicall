@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="backClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="mergeCallsClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="viewModel"
+            type="org.linphone.ui.call.viewmodel.CallsViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/color_background_contrast_in_dark_mode">
+
+        <ImageView
+            style="@style/icon_top_bar_button_style"
+            android:id="@+id/back"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:onClick="@{backClickListener}"
+            android:src="@drawable/caret_left"
+            android:contentDescription="@string/content_description_go_back_icon"
+            app:tint="?attr/color_main1_500"
+            app:layout_constraintBottom_toBottomOf="@id/title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/title"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/main_page_title_style"
+            android:id="@+id/title"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/top_bar_height"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:text="@{@string/calls_list_title + (viewModel.callsCount > 0 ? ` (` + viewModel.callsCount + `)` : ``)}"
+            app:layout_constraintEnd_toStartOf="@id/merge"
+            app:layout_constraintStart_toEndOf="@id/back"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <ImageView
+            style="@style/icon_top_bar_button_style"
+            android:id="@+id/new_call"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:src="@drawable/phone_plus"
+            android:contentDescription="@string/call_action_start_new_call"
+            app:tint="?attr/color_main2_500"
+            app:layout_constraintBottom_toBottomOf="@id/title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/title"/>
+
+        <ImageView
+            style="@style/icon_top_bar_button_style"
+            android:id="@+id/merge"
+            android:onClick="@{mergeCallsClickListener}"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:src="@drawable/arrows_merge"
+            android:contentDescription="@string/content_description_merge_calls_into_conference"
+            android:visibility="@{viewModel.callsCount > 1 ? View.VISIBLE : View.GONE}"
+            app:tint="?attr/color_main2_500"
+            app:layout_constraintBottom_toBottomOf="@id/title"
+            app:layout_constraintEnd_toStartOf="@id/new_call"
+            app:layout_constraintTop_toTopOf="@id/title"/>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/contacts_content"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="?attr/color_grey_100"
+            app:layout_constraintTop_toBottomOf="@id/back"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_margin="10dp"
+                android:background="@drawable/shape_squircle_white_background"
+                app:layout_constraintWidth_max="@dimen/section_max_width"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/calls_list"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!--suppress AndroidUnknownAttribute -->
+        <org.linphone.ui.call.view.RoundCornersTextureView
+            android:id="@+id/local_preview_video_surface"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="10dp"
+            app:alignTopRight="true"
+            app:displayMode="black_bars"
+            roundCornersRadius="@dimen/call_round_corners_texture_view_radius"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_max="@dimen/call_video_preview_max_size"
+            app:layout_constraintWidth_max="@dimen/call_video_preview_max_size" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

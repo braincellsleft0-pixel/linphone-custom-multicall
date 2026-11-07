@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="RoundCornersTextureView">
+        <attr name="alignTopRight" format="boolean" />
+        <attr name="displayMode" format="enum">
+            <enum name="black_bars" value="0"/>
+            <enum name="occupy_all_space" value="1"/>
+            <enum name="hybrid" value="2"/>
+        </attr>
+        <attr name="radius" format="float" />
+    </declare-styleable>
+
+    <declare-styleable name="LinphoneAppTheme">
+        <attr name="color_main1_100" format="color"/>
+        <attr name="color_main1_500" format="color"/>
+
+        <attr name="color_main2_000" format="color"/>
+        <attr name="color_main2_100" format="color"/>
+        <attr name="color_main2_200" format="color"/>
+        <attr name="color_main2_300" format="color"/>
+        <attr name="color_main2_400" format="color"/>
+        <attr name="color_main2_500" format="color"/>
+        <attr name="color_main2_600" format="color"/>
+        <attr name="color_main2_700" format="color"/>
+        <attr name="color_main2_800" format="color"/>
+        <attr name="color_main2_900" format="color"/>
+
+        <attr name="color_grey_100" format="color"/>
+        <attr name="color_grey_200" format="color"/>
+        <attr name="color_grey_300" format="color"/>
+        <attr name="color_grey_400" format="color"/>
+        <attr name="color_grey_500" format="color"/>
+        <attr name="color_grey_600" format="color"/>
+        <attr name="color_grey_800" format="color"/>
+        <attr name="color_grey_900" format="color"/>
+
+        <attr name="color_danger_100" format="color"/>
+        <attr name="color_danger_500" format="color"/>
+        <attr name="color_danger_600" format="color"/>
+        <attr name="color_danger_700" format="color"/>
+        <attr name="color_danger_900" format="color"/>
+
+        <attr name="color_success_100" format="color"/>
+        <attr name="color_success_200" format="color"/>
+        <attr name="color_success_500" format="color"/>
+        <attr name="color_success_700" format="color"/>
+        <attr name="color_success_900" format="color"/>
+
+        <attr name="color_info_500" format="color"/>
+
+        <attr name="color_warning_100" format="color"/>
+        <attr name="color_warning_600" format="color"/>
+        <attr name="color_warning_900" format="color"/>
+        <attr name="color_plain_text_security_warning_600" format="color"/>
+
+        <attr name="color_offline_100" format="color"></attr>
+        <attr name="color_offline_900" format="color"></attr>
+
+        <attr name="color_on_main" format="color"/>
+        <attr name="color_background_contrast_in_dark_mode" format="color"/>
+        <attr name="color_separator" format="color"/>
+        <attr name="color_text" format="color"/>
+        <attr name="color_hint_text" format="color"/>
+
+        <attr name="color_text_field_background" format="color"/>
+        <attr name="color_avatar_background" format="color"/>
+        <attr name="color_avatar_text" format="color"/>
+
+        <attr name="color_chat_bubble_incoming" format="color"/>
+        <attr name="color_chat_bubble_outgoing" format="color"/>
+        <attr name="color_chat_bubble_reply" format="color"/>
+        <attr name="color_chat_bubble_file" format="color"/>
+
+        <attr name="color_message_text_field_background" format="color"/>
+        <attr name="color_conversation_send_area_background" format="color"/>
+
+        <attr name="color_button_background" format="color" />
+        <attr name="color_button_pressed_background" format="color" />
+        <attr name="color_button_disabled_background" format="color" />
+
+        <attr name="color_gradient_start" format="color"/>
+        <attr name="color_gradient_end" format="color"/>
+
+        <attr name="color_trust_background" format="color"/>
+        <attr name="color_trust_track" format="color"/>
+
+        <attr name="color_bottom_sheet_handle" format="color"/>
+        <attr name="color_bottom_sheet_background" format="color"/>
+        <attr name="color_bottom_sheet_disabled_menu" format="color" />
+    </declare-styleable>
+</resources>

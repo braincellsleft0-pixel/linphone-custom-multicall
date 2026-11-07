@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="model"
+            type="org.linphone.ui.main.contacts.model.ContactDeviceModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/end_barrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:constraint_referenced_ids="verify_device, trusted"
+            app:barrierDirection="start" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style"
+            android:id="@+id/device_name"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="10dp"
+            android:text="@{model.name, default=`Pixel 6 Pro de Sylvain`}"
+            android:textSize="14sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:gravity="center_vertical"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/end_barrier"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <ImageView
+            android:id="@+id/trusted"
+            android:visibility="@{model.trusted ? View.VISIBLE : View.GONE}"
+            android:layout_width="@dimen/icon_size"
+            android:layout_height="@dimen/icon_size"
+            android:layout_marginEnd="10dp"
+            android:src="@drawable/trusted"
+            android:contentDescription="@string/content_description_contact_device_trusted"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:onClick="@{() -> model.startCallToDevice()}"
+            style="@style/tertiary_button_label_style"
+            android:id="@+id/verify_device"
+            android:visibility="@{model.trusted ? View.GONE : View.VISIBLE}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/tertiary_button_background"
+            android:gravity="center"
+            android:drawableStart="@drawable/warning_circle"
+            android:drawablePadding="8dp"
+            android:text="@string/contact_make_call_check_device_trust"
+            android:maxLines="1"
+            android:ellipsize="end"
+            app:drawableTint="@color/tertiary_button_label_color"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

@@ -1,0 +1,343 @@
+/*
+ * Copyright (c) 2010-2023 Belledonne Communications SARL.
+ *
+ * This file is part of linphone-android
+ * (see https://www.linphone.org).
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.linphone.contacts
+
+import android.database.Cursor
+import android.database.StaleDataException
+import android.os.Bundle
+import android.provider.ContactsContract
+import android.util.Patterns
+import androidx.annotation.MainThread
+import androidx.annotation.WorkerThread
+import androidx.loader.app.LoaderManager
+import androidx.loader.content.CursorLoader
+import androidx.loader.content.Loader
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import java.lang.Exception
+import org.linphone.LinphoneApplication.Companion.coreContext
+import org.linphone.core.Core
+import org.linphone.core.Factory
+import org.linphone.core.Friend
+import org.linphone.core.FriendList
+import org.linphone.core.GlobalState
+import org.linphone.core.SubscribePolicy
+import org.linphone.core.tools.Log
+import org.linphone.utils.PhoneNumberUtils
+
+class ContactLoader : LoaderManager.LoaderCallbacks<Cursor> {
+    companion object {
+        val projection = arrayOf(
+            ContactsContract.Data.CONTACT_ID,
+            ContactsContract.Contacts.DISPLAY_NAME_PRIMARY,
+            ContactsContract.Data.MIMETYPE,
+            ContactsContract.Contacts.STARRED,
+            ContactsContract.Contacts.LOOKUP_KEY,
+            ContactsContract.CommonDataKinds.Phone.NUMBER,
+            ContactsContract.CommonDataKinds.Phone.TYPE,
+            ContactsContract.CommonDataKinds.Phone.LABEL,
+            ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER
+        )
+
+        private const val TAG = "[Contacts Loader]"
+
+        const val NATIVE_ADDRESS_BOOK_FRIEND_LIST = "Native address-book"
+        const val LINPHONE_ADDRESS_BOOK_FRIEND_LIST = "Linphone address-book"
+    }
+
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    @MainThread
+    override fun onCreateLoader(id: Int, args: Bundle?): Loader<Cursor> {
+        Log.i("$TAG Creating and starting cursor loader")
+        val mimeType = ContactsContract.Data.MIMETYPE
+        val mimeSelection = "$mimeType = ? OR $mimeType = ? OR $mimeType = ? OR $mimeType = ?"
+
+        val selection = if (args?.getBoolean("defaultDirectory", true) == true) {
+            Log.i("$TAG Only fetching contacts from default directory")
+            ContactsContract.Data.IN_DEFAULT_DIRECTORY + " == 1 AND ($mimeSelection)"
+        } else {
+            Log.i("$TAG Fetching all available contacts")
+            mimeSelection
+        }
+
+        val selectionArgs = arrayOf(
+            ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE,
+            ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE,
+            ContactsContract.CommonDataKinds.SipAddress.CONTENT_ITEM_TYPE,
+            ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE
+        )
+
+        val loader = CursorLoader(
+            coreContext.context,
+            ContactsContract.Data.CONTENT_URI,
+            projection,
+            selection,
+            selectionArgs,
+            ContactsContract.Data.CONTACT_ID + " ASC"
+        )
+
+        // WARNING: this doesn't prevent to be called again in onLoadFinished,
+        // it will only have for effect that the notified cursor will be the same as before
+        // instead of a new one with updated content!
+        // loader.setUpdateThrottle(300000L)
+
+        return loader
+    }
+
+    @MainThread
+    override fun onLoadFinished(loader: Loader<Cursor>, cursor: Cursor?) {
+        if (cursor == null) {
+            Log.e("$TAG Cursor is null!")
+            return
+        } else if (cursor.isClosed) {
+            Log.e("$TAG Cursor is closed!")
+            return
+        }
+
+        Log.i("$TAG Load finished, found ${cursor.count} entries in cursor")
+        if (cursor.isAfterLast) {
+            Log.w("$TAG Cursor position is after last, it was probably already used, nothing to do")
+            return
+        }
+
+        coreContext.postOnCoreThread {
+            val core = coreContext.core
+            val state = core.globalState
+            if (state == GlobalState.Shutdown || state == GlobalState.Off) {
+                Log.w("$TAG Core is being stopped or already destroyed, abort")
+            } else {
+                scope.launch {
+                    parseFriends(core, cursor)
+                }
+            }
+        }
+    }
+
+    @MainThread
+    override fun onLoaderReset(loader: Loader<Cursor>) {
+        Log.i("$TAG Loader reset")
+        scope.cancel()
+    }
+
+    @WorkerThread
+    private fun parseFriends(core: Core, cursor: Cursor) {
+        try {
+            val contactIdColumn = cursor.getColumnIndexOrThrow(ContactsContract.Data.CONTACT_ID)
+            val mimetypeColumn = cursor.getColumnIndexOrThrow(ContactsContract.Data.MIMETYPE)
+            val displayNameColumn = cursor.getColumnIndexOrThrow(
+                ContactsContract.Data.DISPLAY_NAME_PRIMARY
+            )
+            val starredColumn = cursor.getColumnIndexOrThrow(ContactsContract.Contacts.STARRED)
+            val lookupColumn = cursor.getColumnIndexOrThrow(
+                ContactsContract.Contacts.LOOKUP_KEY
+            )
+            val phoneNumberColumn = cursor.getColumnIndexOrThrow(
+                ContactsContract.CommonDataKinds.Phone.NUMBER
+            )
+            val phoneTypeColumn = cursor.getColumnIndexOrThrow(
+                ContactsContract.CommonDataKinds.Phone.TYPE
+            )
+            val phoneLabelColumn = cursor.getColumnIndexOrThrow(
+                ContactsContract.CommonDataKinds.Phone.LABEL
+            )
+            val normalizedPhoneColumn = cursor.getColumnIndexOrThrow(
+                ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER
+            )
+            val sipAddressColumn = cursor.getColumnIndexOrThrow(
+                ContactsContract.CommonDataKinds.SipAddress.SIP_ADDRESS
+            )
+            val companyColumn = cursor.getColumnIndexOrThrow(
+                ContactsContract.CommonDataKinds.Organization.COMPANY
+            )
+            val jobTitleColumn = cursor.getColumnIndexOrThrow(
+                ContactsContract.CommonDataKinds.Organization.TITLE
+            )
+            val givenNameColumn = cursor.getColumnIndexOrThrow(
+                ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME
+            )
+            val familyNameColumn = cursor.getColumnIndexOrThrow(
+                ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME
+            )
+
+            val friends = HashMap<String, Friend>()
+            while (!cursor.isClosed && cursor.moveToNext()) {
+                try {
+                    val id: String = cursor.getString(contactIdColumn)
+                    val mime: String? = cursor.getString(mimetypeColumn)
+
+                    val friend = friends[id] ?: core.createFriend()
+                    friend.refKey = id
+                    if (friend.name.isNullOrEmpty()) {
+                        val displayName: String? = cursor.getString(displayNameColumn)
+                        if (!displayName.isNullOrEmpty()) {
+                            friend.name = displayName
+
+                            val uri = friend.getNativeContactPictureUri()
+                            if (uri != null) {
+                                friend.photo = uri.toString()
+                            }
+
+                            val starred = cursor.getInt(starredColumn) == 1
+                            friend.starred = starred
+
+                            val lookupKey =
+                                cursor.getString(lookupColumn)
+                            friend.nativeUri =
+                                "${ContactsContract.Contacts.CONTENT_LOOKUP_URI}/$lookupKey"
+
+                            friend.isSubscribesEnabled = false
+                            // Disable peer to peer short term presence
+                            friend.incSubscribePolicy = SubscribePolicy.SPDeny
+                        }
+                    }
+
+                    when (mime) {
+                        ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE -> {
+                            val data1: String? = cursor.getString(phoneNumberColumn)
+                            val data2: String? = cursor.getString(phoneTypeColumn)
+                            val data3: String? = cursor.getString(phoneLabelColumn)
+                            val data4: String? = cursor.getString(normalizedPhoneColumn)
+
+                            val label =
+                                PhoneNumberUtils.addressBookLabelTypeToVcardParamString(
+                                    data2?.toInt()
+                                        ?: ContactsContract.CommonDataKinds.BaseTypes.TYPE_CUSTOM,
+                                    data3
+                                )
+
+                            val number =
+                                if (data1.isNullOrEmpty() ||
+                                    !Patterns.PHONE.matcher(data1).matches()
+                                ) {
+                                    data4 ?: data1
+                                } else {
+                                    data1
+                                }
+
+                            if (!number.isNullOrEmpty()) {
+                                val phoneNumber = Factory.instance()
+                                    .createFriendPhoneNumber(number, label)
+                                friend.addPhoneNumberWithLabel(phoneNumber)
+                            }
+                        }
+                        ContactsContract.CommonDataKinds.SipAddress.CONTENT_ITEM_TYPE -> {
+                            val sipAddress: String? = cursor.getString(sipAddressColumn)
+                            if (!sipAddress.isNullOrEmpty()) {
+                                val address = core.interpretUrl(sipAddress, false)
+                                if (address != null) {
+                                    friend.addAddress(address)
+                                }
+                            }
+                        }
+                        ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE -> {
+                            val organization: String? = cursor.getString(companyColumn)
+                            if (!organization.isNullOrEmpty()) {
+                                friend.organization = organization
+                            }
+
+                            val job: String? = cursor.getString(jobTitleColumn)
+                            if (!job.isNullOrEmpty()) {
+                                friend.jobTitle = job
+                            }
+                        }
+                        ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE -> {
+                            val givenName: String? = cursor.getString(givenNameColumn)
+                            if (!givenName.isNullOrEmpty()) {
+                                friend.firstName = givenName
+                            }
+
+                            val familyName: String? = cursor.getString(familyNameColumn)
+                            if (!familyName.isNullOrEmpty()) {
+                                friend.lastName = familyName
+                            }
+                        }
+                    }
+
+                    friends[id] = friend
+                } catch (e: Exception) {
+                    Log.e("$TAG Exception: $e")
+                }
+            }
+
+            Log.i("$TAG Contacts parsed, posting another task to handle adding them (or not)")
+            // Re-post another task to allow other tasks on Core thread
+            coreContext.postOnCoreThreadWhenAvailableForHeavyTask({
+                addFriendsIfNeeded(friends)
+            }, "add friends to Core")
+        } catch (sde: StaleDataException) {
+            Log.e("$TAG State Data Exception: $sde")
+        } catch (ise: IllegalStateException) {
+            Log.e("$TAG Illegal State Exception: $ise")
+        } catch (e: Exception) {
+            Log.e("$TAG Exception: $e")
+        }
+    }
+
+    @WorkerThread
+    private fun addFriendsIfNeeded(friends: HashMap<String, Friend>) {
+        val core = coreContext.core
+
+        if (core.globalState == GlobalState.Shutdown || core.globalState == GlobalState.Off) {
+            Log.w("$TAG Core is being stopped or already destroyed, abort")
+        } else if (friends.isEmpty()) {
+            Log.w("$TAG No friend created!")
+        } else {
+            Log.i("$TAG ${friends.size} friends fetched")
+
+            val friendsList = core.getFriendListByName(NATIVE_ADDRESS_BOOK_FRIEND_LIST)
+                ?: core.createFriendList()
+            if (friendsList.displayName.isNullOrEmpty()) {
+                Log.i(
+                    "$TAG Friend list [$NATIVE_ADDRESS_BOOK_FRIEND_LIST] didn't exist yet, let's create it"
+                )
+                friendsList.isDatabaseStorageEnabled =
+                    true // Store them to keep presence info available for push notifications & favorites
+                friendsList.type = FriendList.Type.Default
+                friendsList.displayName = NATIVE_ADDRESS_BOOK_FRIEND_LIST
+                core.addFriendList(friendsList)
+
+                for (friend in friends.values) {
+                    friendsList.addLocalFriend(friend)
+                }
+                Log.i("$TAG Friends added")
+            } else {
+                val friendsArray = friends.values.toTypedArray()
+                Log.i(
+                    "$TAG Friend list [$NATIVE_ADDRESS_BOOK_FRIEND_LIST] found, synchronizing existing friends with new ones"
+                )
+                val changes = friendsList.synchronizeFriendsWith(friendsArray)
+                if (changes) {
+                    Log.i("$TAG Locally stored friends synchronized with native address book")
+                } else {
+                    Log.i("$TAG No changes detected between native address book and local friends storage")
+                }
+            }
+            friends.clear()
+
+            friendsList.updateSubscriptions()
+            Log.i("$TAG Subscription(s) updated")
+            coreContext.contactsManager.onNativeContactsLoaded()
+        }
+    }
+}

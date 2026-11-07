@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/chat_nav_graph"
+    app:startDestination="@id/emptyFragment">
+
+    <fragment
+        android:id="@+id/emptyFragment"
+        android:name="org.linphone.ui.main.fragment.EmptyFragment"
+        android:label="EmptyFragment"
+        tools:layout="@layout/empty_fragment"/>
+
+    <fragment
+        android:id="@+id/conversationFragment"
+        android:name="org.linphone.ui.main.chat.fragment.ConversationFragment"
+        android:label="ConversationFragment"
+        tools:layout="@layout/chat_conversation_fragment">
+        <argument
+            android:name="conversationId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_conversationFragment_to_conversationInfoFragment"
+            app:destination="@id/conversationInfoFragment"
+            app:launchSingleTop="true"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_conversationFragment_to_emptyFragment"
+            app:destination="@id/emptyFragment"
+            app:popUpTo="@id/conversationFragment"
+            app:popUpToInclusive="true"/>
+        <action
+            android:id="@+id/action_conversationFragment_to_conversationMediaListFragment"
+            app:destination="@id/conversationMediaListFragment"
+            app:launchSingleTop="true"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_conversationFragment_to_conversationDocumentsListFragment"
+            app:destination="@id/conversationDocumentsListFragment"
+            app:launchSingleTop="true"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_conversationFragment_to_conversationEphemeralLifetimeFragment"
+            app:destination="@id/conversationEphemeralLifetimeFragment"
+            app:launchSingleTop="true"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_conversationFragment_to_conversationForwardMessageFragment"
+            app:destination="@id/conversationForwardMessageFragment"
+            app:launchSingleTop="true"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+
+    <action
+        android:id="@+id/action_global_conversationFragment"
+        app:destination="@id/conversationFragment"
+        app:launchSingleTop="true"/>
+
+    <fragment
+        android:id="@+id/conversationInfoFragment"
+        android:name="org.linphone.ui.main.chat.fragment.ConversationInfoFragment"
+        android:label="ConversationInfoFragment"
+        tools:layout="@layout/chat_info_fragment">
+        <argument
+            android:name="conversationId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_conversationInfoFragment_to_addParticipantsFragment"
+            app:destination="@id/addParticipantsFragment"
+            app:launchSingleTop="true"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_conversationInfoFragment_to_conversationEphemeralLifetimeFragment"
+            app:destination="@id/conversationEphemeralLifetimeFragment"
+            app:launchSingleTop="true"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_conversationInfoFragment_to_conversationMediaListFragment"
+            app:destination="@id/conversationMediaListFragment"
+            app:launchSingleTop="true"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_conversationInfoFragment_to_conversationDocumentsListFragment"
+            app:destination="@id/conversationDocumentsListFragment"
+            app:launchSingleTop="true"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/addParticipantsFragment"
+        android:name="org.linphone.ui.main.fragment.AddParticipantsFragment"
+        android:label="AddParticipantsFragment"
+        tools:layout="@layout/generic_add_participants_fragment">
+        <argument
+            android:name="selectedParticipants"
+            app:argType="string[]"
+            app:nullable="true"
+            android:defaultValue="@null" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/conversationEphemeralLifetimeFragment"
+        android:name="org.linphone.ui.main.chat.fragment.ConversationEphemeralLifetimeFragment"
+        android:label="ConversationEphemeralLifetimeFragment"
+        tools:layout="@layout/chat_ephemeral_lifetime_fragment">
+        <argument
+            android:name="currentEphemeralLifetime"
+            app:argType="long" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/conversationMediaListFragment"
+        android:name="org.linphone.ui.main.chat.fragment.ConversationMediaListFragment"
+        android:label="ConversationMediaListFragment"
+        tools:layout="@layout/chat_media_fragment">
+        <argument
+            android:name="conversationId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/conversationDocumentsListFragment"
+        android:name="org.linphone.ui.main.chat.fragment.ConversationDocumentsListFragment"
+        android:label="ConversationDocumentsListFragment"
+        tools:layout="@layout/chat_documents_fragment">
+        <argument
+            android:name="conversationId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/conversationForwardMessageFragment"
+        android:name="org.linphone.ui.main.chat.fragment.ConversationForwardMessageFragment"
+        android:label="ConversationForwardMessageFragment"
+        tools:layout="@layout/chat_message_forward_fragment">
+        <action
+            android:id="@+id/action_conversationForwardMessageFragment_to_conversationFragment"
+            app:destination="@id/conversationFragment"
+            app:popUpTo="@id/conversationFragment"
+            app:popUpToInclusive="true"
+            app:launchSingleTop="true"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+
+</navigation>

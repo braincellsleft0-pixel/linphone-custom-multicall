@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="callViewModel"
+            type="org.linphone.ui.call.viewmodel.CurrentCallViewModel" />
+        <variable
+            name="callsViewModel"
+            type="org.linphone.ui.call.viewmodel.CallsViewModel" />
+    </data>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent">
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/floating_card_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:cardCornerRadius="26dp"
+            app:cardElevation="16dp"
+            app:cardBackgroundColor="#181B20"
+            app:strokeColor="#334155"
+            app:strokeWidth="1.5dp"
+            app:cardPreventCornerOverlap="false"
+            tools:context=".ui.call.CallActivity">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:keepScreenOn="true">
+
+                <include
+                    android:id="@+id/other_calls_top_bar"
+                    layout="@layout/call_activity_other_calls_top_bar"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:visibility="gone"
+                    app:viewModel="@{callsViewModel}"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"/>
+
+                <androidx.fragment.app.FragmentContainerView
+                    android:id="@+id/call_nav_container"
+                    android:name="androidx.navigation.fragment.NavHostFragment"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    app:defaultNavHost="true"
+                    app:navGraph="@navigation/call_nav_graph"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"/>
+
+                <LinearLayout
+                    android:id="@+id/toasts_area"
+                    android:visibility="@{callViewModel.pipMode ? View.INVISIBLE : View.VISIBLE}"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="@dimen/toast_top_margin"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="15dp"
+                    app:layout_constraintWidth_max="@dimen/toast_max_width"
+                    app:layout_constraintTop_toBottomOf="@id/other_calls_top_bar"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+    </FrameLayout>
+
+</layout>

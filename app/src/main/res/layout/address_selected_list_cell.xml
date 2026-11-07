@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/tools">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="model"
+            type="org.linphone.ui.main.model.SelectedAddressModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="75dp"
+        android:layout_height="@dimen/selected_participant_cell_height"
+        android:padding="5dp">
+
+        <include
+            android:id="@+id/avatar"
+            android:onClick="@{() -> model.removeFromSelection()}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            layout="@layout/contact_avatar_medium"
+            bind:model="@{model.avatarModel}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/remove_from_selection"
+            android:onClick="@{() -> model.removeFromSelection()}"
+            android:layout_width="@dimen/icon_size"
+            android:layout_height="@dimen/icon_size"
+            android:src="@drawable/x"
+            android:padding="5dp"
+            android:background="@drawable/shape_circle_background"
+            android:contentDescription="@string/content_description_click_to_remove_participant"
+            app:tint="?attr/color_main2_500"
+            app:layout_constraintTop_toTopOf="@id/avatar"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style"
+            android:id="@+id/name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="@{model.avatarModel.name, default=`John Doe`}"
+            android:textSize="14sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/avatar"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

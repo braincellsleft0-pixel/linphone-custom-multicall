@@ -1,0 +1,1088 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!DOCTYPE resources [
+    <!ENTITY appName "Linphone">
+]>
+
+<resources>
+    <string name="app_name" translatable="false">&appName;</string>
+
+    <!-- Not translatable strings -->
+    <string name="vertical_separator" translatable="false">|</string>
+
+    <string name="assistant_web_platform_link" translatable="false">subscribe.linphone.org</string>
+    <string name="assistant_linphone_contact_us_link" translatable="false">linphone.org/contact</string>
+
+    <string name="notification_channel_call_id" translatable="false">linphone_6.3_notification_call_id</string>
+    <string name="notification_channel_incoming_call_id" translatable="false">linphone_6.0_notification_incoming_call_id</string>
+    <string name="notification_channel_missed_call_id" translatable="false">linphone_6.0_notification_missed_call_id</string>
+    <string name="notification_channel_service_id" translatable="false">linphone_6.0_notification_service_id</string>
+    <string name="notification_channel_chat_id" translatable="false">linphone_6.0_notification_chat_id</string>
+    <string name="notification_channel_without_ringtone_incoming_call_id" translatable="false">linphone_6.0.1_notification_incoming_call_id</string>
+    <string name="notification_channel_account_error_id" translatable="false">linphone_6.1_account_error_id</string>
+    <string name="notification_channel_call_redirection_id" translatable="false">linphone_6.2_call_redirection_id</string>
+
+    <string name="emoji_love" translatable="false">❤️</string>
+    <string name="emoji_thumbs_up" translatable="false">👍</string>
+    <string name="emoji_laughing" translatable="false">😂</string>
+    <string name="emoji_surprised" translatable="false">😮</string>
+    <string name="emoji_tear" translatable="false">😢</string>
+
+    <string name="help_about_open_source_licenses_title" translatable="false">GNU General Public License v3.0</string>
+    <string name="help_about_open_source_licenses_subtitle" translatable="false">© Belledonne Communications 2010-2025</string>
+    <string name="help_advanced_send_debug_logs_email_address" translatable="false">linphone-android@belledonne-communications.com</string>
+
+    <string name="website_contact_url" translatable="false">https://linphone.org/contact</string>
+    <string name="website_download_url" translatable="false">https://linphone.org/linphone-softphone</string>
+    <string name="website_user_guide_url" translatable="false">https://linphone.org/en/docs/</string>
+    <string name="website_privacy_policy_url" translatable="false">https://linphone.org/en/privacy-policy</string>
+    <string name="website_terms_and_conditions_url" translatable="false">https://linphone.org/en/terms-of-use</string>
+    <string name="web_platform_register_email_url" translatable="false">https://subscribe.linphone.org/register/email</string>
+    <string name="web_platform_forgotten_password_url" translatable="false">https://subscribe.linphone.org</string>
+    <string name="website_translate_weblate_url" translatable="false">https://weblate.linphone.org/</string>
+    <string name="website_open_source_licences_usage_url" translatable="false">https://wiki.linphone.org/xwiki/wiki/public/view/Linphone/Third%20party%20components%20/#Hlinphone-android</string>
+    <string name="conversation_end_to_end_encrypted_bottom_sheet_link" translatable="false"><u>https://linphone.org/en/features/#security</u></string>
+
+    <string name="conversation_one_to_one_hidden_subject" translatable="false">Dummy subject</string>
+
+    <!-- Common words -->
+    <string name="sip_address">SIP address</string>
+    <string name="device_id">Device ID</string>
+    <string name="sip_address_display_name">Display name</string>
+    <string name="sip_address_domain">Domain</string>
+    <string name="username">Username</string>
+    <string name="authentication_id">Authentication ID (if different)</string>
+    <string name="password">Password</string>
+    <string name="phone_number">Phone number</string>
+    <string name="or">or</string>
+    <string name="next">Next</string>
+    <string name="start">Start</string>
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
+    <plurals name="days">
+        <item quantity="one">%s day</item>
+        <item quantity="other">%s days</item>
+    </plurals>
+    <string name="search">Search</string>
+
+    <plurals name="selection_count_label">
+        <item quantity="one">%s selected</item>
+        <item quantity="other">%s selected</item>
+    </plurals>
+
+    <!-- Dialog various possible buttons label -->
+    <string name="dialog_deny">Deny</string>
+    <string name="dialog_accept">Accept</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_continue">Continue</string>
+    <string name="dialog_call">Call</string>
+    <string name="dialog_delete">Delete</string>
+    <string name="dialog_install">Install</string>
+    <string name="dialog_do_not_show_anymore">Do not show this dialog anymore</string>
+    <string name="dialog_no">No</string>
+    <string name="dialog_yes">Yes</string>
+    <string name="dialog_remove">Remove</string>
+    <string name="dialog_confirm">Confirm</string>
+    <string name="dialog_understood">Understood</string>
+    <string name="dialog_do_not_cancel">Do not cancel</string>
+
+    <!-- Related to Android notifications -->
+    <string name="notification_channel_call_name">Active calls notifications</string>
+    <string name="notification_channel_incoming_call_name">Incoming calls notifications</string>
+    <string name="notification_channel_missed_call_name">Missed calls notifications</string>
+    <string name="notification_channel_service_name">Service notification</string>
+    <string name="notification_channel_service_desc">This service will run all the time to keep app alive and allow you to receive calls and messages without push notifications.</string>
+    <string name="notification_channel_chat_name">Instant messages notifications</string>
+    <string name="notification_channel_account_error_name">Account error notifications</string>
+    <string name="notification_channel_call_redirection_name">Call redirection notifications</string>
+    <string name="notification_chat_message_reaction_received">Reacted by %1$s to: %2$s</string>
+    <string name="notification_mark_message_as_read">Mark as read</string>
+    <string name="notification_reply_to_message">Reply</string>
+    <string name="notification_missed_call">Missed call from %s</string>
+    <string name="notification_missed_group_call">Missed group call: %s</string>
+    <string name="notification_missed_calls">%s missed calls</string>
+    <string name="notification_missed_call_title">Missed call</string>
+    <string name="notification_push_received_title">&appName;</string>
+    <string name="notification_push_received_message">Searching for new messages</string>
+    <string name="notification_file_transfer_title">&appName;</string>
+    <string name="notification_file_transfer_startup_message">File(s) transfer in progress</string>
+    <plurals name="notification_file_transfer_upload">
+        <item quantity="one">%s file being uploaded</item>
+        <item quantity="other">%s files being uploaded</item>
+    </plurals>
+    <plurals name="notification_file_transfer_download">
+        <item quantity="one">%s file being downloaded</item>
+        <item quantity="other">%s files being downloaded</item>
+    </plurals>
+    <string name="notification_file_transfer_upload_download_message" translatable="false">%s, %s</string>
+    <string name="notification_keep_app_alive_message">Click to open</string>
+    <string name="notification_keep_app_alive_description">This notification keeps app alive while in background</string>
+    <string name="notification_enable_speaker_for_call">Turn on speaker</string>
+    <string name="notification_disable_speaker_for_call">Turn off speaker</string>
+    <string name="notification_account_registration_error_title">Account %s registration failed!</string>
+    <string name="notification_account_registration_error_message">Open &appName; to refresh the registration</string>
+    <string name="notification_in_call_foreground_service_error_title">Your correspondent does not hear you!</string>
+    <string name="notification_in_call_foreground_service_error_message">Click on this notification to fix it</string>
+    <string name="notification_chat_message_hidden_content">&lt;redacted&gt;</string>
+    <string name="notification_call_redirection_message">The call will be redirected through &appName; in 4 seconds unless you say otherwise.</string>
+    <string name="notification_allow_call_redirection_title">Continue</string>
+    <string name="notification_deny_call_redirection_title">Cancel redirection</string>
+
+    <!-- First screens user see when app is installed and started -->
+    <string name="welcome_page_title">Welcome</string>
+    <string name="welcome_page_subtitle">in &appName;</string>
+    <string name="welcome_page_1_message">A <b>secured</b>, <b>open source</b> and <b>French</b> communication app.</string>
+    <string name="welcome_page_2_title">Secured</string>
+    <string name="welcome_page_2_message">Your communications are safe thanks to our <b>end-to-end encryption</b>.</string>
+    <string name="welcome_page_3_title">Open source</string>
+    <string name="welcome_page_3_message">A <b>free</b> and open source application since <b>2001</b>.</string>
+
+    <!-- Generic toasts -->
+    <string name="phone_number_copied_to_clipboard_toast">Phone number copied into clipboard</string>
+    <string name="sip_address_copied_to_clipboard_toast">SIP address copied into clipboard</string>
+    <string name="new_account_configured_toast">New account configured</string>
+    <string name="file_successfully_exported_to_media_store_toast">File has been exported to native gallery</string>
+    <string name="export_file_to_media_store_error_toast">Error trying to export file to native gallery</string>
+    <string name="file_successfully_exported_to_documents_toast">File has been exported to documents</string>
+    <string name="export_file_to_documents_error_toast">Error trying to export file to documents</string>
+    <string name="media_playback_low_volume_warning_toast">Media volume is low, you may not hear anything!</string>
+    <string name="remote_provisioning_config_applied_toast">Configuration successfully applied</string>
+    <string name="remote_provisioning_config_failed_toast">Error while trying to download and apply remote configuration</string>
+    <string name="media_player_generic_error_toast">Error trying to create media player</string>
+
+    <!-- Assistant related string (account register / login / etc...) -->
+    <string name="assistant_dialog_general_terms_and_privacy_policy_title">General terms &amp; privacy policy</string>
+    <string name="assistant_dialog_general_terms_label">general terms</string>
+    <string name="assistant_dialog_privacy_policy_label">privacy policy</string>
+    <string name="assistant_dialog_general_terms_and_privacy_policy_message">By continuing, you accept our %1$s and %2$s.</string>
+    <string name="assistant_dialog_confirm_phone_number_title">Confirm phone number</string>
+    <string name="assistant_dialog_confirm_phone_number_message">Are you sure your phone number is %s?</string>
+    <string name="assistant_dialog_phone_number_validation_not_available_title">Phone number validation not available</string>
+    <string name="assistant_dialog_phone_number_validation_not_available_message">Phone number validation is not available, please use email account creation process.</string>
+    <string name="assistant_dialog_phone_number_validation_not_available_register_button_label">Register with an email</string>
+    <string name="assistant_account_login">Login</string>
+    <string name="assistant_scan_qr_code">Scan QR code</string>
+    <string name="assistant_qr_code_invalid_toast">Invalid QR code!</string>
+    <string name="assistant_login_third_party_sip_account">Use a third party SIP account</string>
+    <string name="assistant_login_third_party_sip_account_title">Third party SIP account</string>
+    <string name="assistant_login_using_single_sign_on">Single sign on</string>
+    <string name="assistant_login_cant_parse_address_toast">SIP address is invalid!</string>
+    <string name="assistant_login_address_without_username_toast">SIP address doesn\'t contains a username!</string>
+    <string name="assistant_account_login_already_connected_error">Account already exists</string>
+    <string name="assistant_no_account_yet">No account yet?</string>
+    <string name="assistant_account_register">Register</string>
+    <string name="assistant_account_creation_sms_confirmation_title">Confirm your phone number</string>
+    <string name="assistant_account_creation_sms_confirmation_explanation">We have sent a verification code on your phone number %1$s.\n\nPlease enter the verification code below:</string>
+    <string name="assistant_account_creation_wrong_phone_number">Wrong number?</string>
+    <string name="assistant_account_create">Create</string>
+    <string name="assistant_create_account_using_email_on_our_web_platform">Create an account with your email on:</string>
+    <string name="assistant_already_have_an_account">Already have an account?</string>
+    <string name="assistant_sip_account_transport_protocol">Transport</string>
+    <string name="assistant_sip_account_lime_algorithm">LIME algorithm(s) (comma separated)</string>
+    <string name="assistant_sip_account_lime_algorithm_hint">Allowed values are: c25519, c448, c25519k512, c25519mlk512 and c448mlk1024</string>
+    <string name="assistant_third_party_sip_account_warning_explanation">Some features require a &appName; account, such as group messaging, video conferences…\n\nThese features are hidden when you register with a third party SIP account.\n\nTo enable it in a commercial project, please contact us.</string>
+    <string name="assistant_third_party_sip_account_create_linphone_account">I prefer to create a &appName; account</string>
+    <string name="assistant_third_party_sip_account_warning_ok">I understand</string>
+    <string name="assistant_account_register_unavailable_no_push_warning">Push notifications do not seem to be available on your device, but they are mandatory for creating an account in the mobile app.\n\nWe invite you to create an account on our web platform instead:</string>
+    <string name="assistant_account_register_push_notification_not_received_error">Push notification with auth token not received in 5 seconds, please try again later</string>
+    <string name="assistant_account_register_unexpected_error">Unexpected error occurred, please try again later</string>
+    <string name="assistant_account_login_forbidden_error">Wrong username or password</string>
+    <string name="assistant_account_login_error">Failed to login: error code is %s</string>
+    <string name="assistant_permissions_title">Grant permissions</string>
+    <string name="assistant_permissions_grant_all_of_them">OK</string>
+    <string name="assistant_permissions_skip_permissions">Do it later</string>
+    <string name="assistant_permissions_subtitle">To fully enjoy &appName; we need you to grant us the following permissions :</string>
+    <string name="assistant_permissions_read_contacts_title"><b>Read contacts:</b> To display your contacts and find whom is using &appName;.</string>
+    <string name="assistant_permissions_post_notifications_title"><b>Post notifications:</b> To be informed when you receive a message or a call.</string>
+    <string name="assistant_permissions_record_audio_title"><b>Record audio:</b> So your correspondent can hear you and to record voice messages.</string>
+    <string name="assistant_permissions_access_camera_title"><b>Access camera:</b> To capture video during video calls and conferences.</string>
+    <string name="assistant_permissions_access_local_network_title"><b>Access local network (optional):</b> Required since Android 17 to be able to connect to a server located on the local network.</string>
+    <string name="assistant_forgotten_password_title">Account recovery</string>
+    <string name="assistant_forgotten_password_subtitle">Choose how to recover your account.</string>
+    <string name="assistant_forgotten_password_message">You created your account using:</string>
+    <string name="assistant_recover_email_account_label">An email</string>
+    <string name="assistant_recover_phone_number_account_label">A phone number</string>
+    <string name="assistant_recover_phone_number_account_unavailable_no_push_warning">Push notifications do not seem to be available on your device, but they are mandatory for recovering a phone number account in the mobile app.</string>
+
+    <!-- Main navigation items -->
+    <string name="bottom_navigation_contacts_label">Contacts</string>
+    <string name="bottom_navigation_calls_label">Calls</string>
+    <string name="bottom_navigation_conversations_label">Conversations</string>
+    <string name="bottom_navigation_meetings_label">Meetings</string>
+
+    <!-- Side menu -->
+    <string name="drawer_menu_manage_account">Manage the profile</string>
+    <string name="drawer_menu_account_connection_status_connected">Connected</string>
+    <string name="drawer_menu_account_connection_status_disconnected">Disconnected</string>
+    <string name="drawer_menu_account_connection_status_refreshing">Refreshing</string>
+    <string name="drawer_menu_account_connection_status_cleared">Disabled</string>
+    <string name="drawer_menu_account_connection_status_progress">Connecting…</string>
+    <string name="drawer_menu_account_connection_status_failed">Error</string>
+    <string name="drawer_menu_no_account_configured_yet">No account configured yet</string>
+    <string name="drawer_menu_add_account">Add an account</string>
+
+    <!-- Help & troubleshooting related -->
+    <string name="help_title">Help</string>
+    <string name="help_about_title">About &appName;</string>
+    <string name="help_about_user_guide_title">&appName; user guide</string>
+    <string name="help_about_user_guide_subtitle">Learn how to master all app features, step by step.</string>
+    <string name="help_about_privacy_policy_title">Privacy policy</string>
+    <string name="help_about_privacy_policy_subtitle">What information &appName; collects and uses</string>
+    <string name="help_about_version_title">Version</string>
+    <string name="help_about_check_for_update">Check update</string>
+    <string name="help_about_contribute_translations_title">Contribute on &appName; translation</string>
+    <string name="help_about_contribute_translations_subtitle">Help make the app accessible to as many people as possible.</string>
+    <string name="help_about_advanced_title">Advanced</string>
+    <string name="help_version_up_to_date_toast_message">Your version is up-to-date</string>
+    <string name="help_error_checking_version_toast_message">An error occurred while checking for update</string>
+    <string name="help_dialog_update_available_title">Update available</string>
+    <string name="help_dialog_update_available_message">A new version %s is available. Do you want to update?</string>
+    <string name="help_quit_title">Quit app</string>
+    <string name="help_troubleshooting_title">Troubleshooting</string>
+    <string name="help_troubleshooting_subtitle">Transmit your diagnostic logs to facilitate bug resolution.</string>
+    <string name="help_troubleshooting_print_logs_in_logcat">Print logs in logcat</string>
+    <string name="help_troubleshooting_clean_logs">Clean logs</string>
+    <string name="help_troubleshooting_share_logs">Share logs</string>
+    <string name="help_troubleshooting_app_version_title">App version</string>
+    <string name="help_troubleshooting_sdk_version_title">SDK version</string>
+    <string name="help_troubleshooting_firebase_project_title">Firebase project ID</string>
+    <string name="help_troubleshooting_share_logs_dialog_title">Share debug logs link using…</string>
+    <string name="help_troubleshooting_debug_logs_cleaned_toast_message">Debug logs have been cleaned</string>
+    <string name="help_troubleshooting_debug_logs_upload_error_toast_message">Failed to upload debug logs</string>
+    <string name="help_troubleshooting_show_config_file">Show configuration</string>
+
+    <!-- App & SDK settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_security_title">Security</string>
+    <string name="settings_security_enable_vfs_title">Encrypt everything</string>
+    <string name="settings_security_enable_vfs_subtitle">Warning: once enabled it can\'t be disabled!</string>
+    <string name="settings_security_enable_vfs_failure_toast">Failed to enable encryption module!</string>
+    <string name="settings_security_enable_vfs_success_toast">Encryption module enabled</string>
+    <string name="settings_security_enable_vfs_dialog_confirmation_title">Do you really want to encrypt everything?</string>
+    <string name="settings_security_enable_vfs_dialog_confirmation_message">Once activated, you\'ll have to restart the app.\nAfter that all application data will be encrypted and accessible only via the application.\n\nBe careful, it can\'t be undone!</string>
+    <string name="settings_security_prevent_screenshots_title">Prevent interface from being recorded</string>
+    <string name="settings_calls_title">Calls</string>
+    <string name="settings_calls_echo_canceller_title">Use software echo canceller</string>
+    <string name="settings_calls_echo_canceller_subtitle">Prevents echo from being heard by remote end if no hardware echo canceller is available</string>
+    <string name="settings_calls_calibrate_echo_canceller_title">Calibrate echo canceller</string>
+    <string name="settings_calls_calibrate_echo_canceller_in_progress">in progress</string>
+    <string name="settings_calls_calibrate_echo_canceller_done_no_echo">no echo</string>
+    <string name="settings_calls_calibrate_echo_canceller_done">%s ms</string>
+    <string name="settings_calls_calibrate_echo_canceller_failed">failed</string>
+    <string name="settings_calls_adaptive_rate_control_title">Adaptive rate control</string>
+    <string name="settings_calls_enable_fec_title">Enable video FEC</string>
+    <string name="settings_calls_vibrate_while_ringing_title">Vibrate while incoming call is ringing</string>
+    <string name="settings_calls_auto_record_title">Automatically start recording calls</string>
+    <string name="settings_calls_change_ringtone_title">Change ringtone</string>
+    <string name="settings_calls_change_ringtone_pick_title">Pick ringtone</string>
+    <string name="settings_calls_change_ringtone_picker_unavailable_toast">Ringtone picker isn\'t available!</string>
+    <string name="settings_calls_use_redirection_service">Use call redirection service</string>
+    <string name="settings_advanced_calls_rfc_2833_dmtf_title">Use RFC 2833 for DTMFs</string>
+    <string name="settings_advanced_calls_sip_info_dmtf_title">Use SIP INFO for DTMFs</string>
+    <string name="settings_advanced_calls_proximity_sensor_title">Use proximity sensor to turn OFF the screen when near the ear</string>
+    <string name="settings_conversations_title">Conversations</string>
+    <string name="settings_conversations_auto_download_title">Auto-download files</string>
+    <string name="settings_conversations_auto_export_media_to_native_gallery_title">Make downloaded media public</string>
+    <string name="settings_conversations_mark_as_read_when_dismissing_notif_title">Mark conversation as read when dismissing message notification</string>
+    <string name="settings_conversations_hide_message_content_in_notif_title">Do not show message content in Android notification</string>
+    <string name="settings_contacts_title">Contacts</string>
+    <string name="settings_contacts_sort_by_first_name_title">Sort contacts by</string>
+    <string name="settings_contacts_edit_native_contacts_in_linphone_title">Use &appName; contact editor for native contacts</string>
+    <string name="settings_contacts_hide_empty_contacts_title">Hide contacts without SIP address nor phone number</string>
+    <string name="settings_contacts_presence_subscribe_title">Subscribe to presence info</string>
+    <string name="settings_contacts_add_ldap_server_title">Add LDAP server</string>
+    <string name="settings_contacts_edit_ldap_server_title">Edit LDAP server</string>
+    <string name="settings_contacts_add_carddav_server_title">Add CardDAV address book</string>
+    <string name="settings_contacts_edit_carddav_server_title">Edit CardDAV address book</string>
+    <string name="settings_contacts_carddav_name_title">Display name</string>
+    <string name="settings_contacts_carddav_server_url_title">Server URL</string>
+    <string name="settings_contacts_carddav_username_title">Username</string>
+    <string name="settings_contacts_carddav_password_title">Password</string>
+    <string name="settings_contacts_carddav_realm_title">Auth realm</string>
+    <string name="settings_contacts_carddav_use_as_default_title">Store newly created contacts in it</string>
+    <string name="settings_contacts_carddav_sync_successful_toast">Synchronization was successful</string>
+    <string name="settings_contacts_carddav_sync_error_toast">Synchronization error!</string>
+    <string name="settings_contacts_carddav_deleted_toast">CardDAV account removed</string>
+    <string name="settings_contacts_carddav_mandatory_field_not_filled_toast">Please fill at least the display name and the server URL</string>
+    <string name="settings_contacts_carddav_read_only_label">This address-book is read-only</string>
+    <string name="settings_contacts_ldap_enabled_title">Enabled</string>
+    <string name="settings_contacts_ldap_server_url_title">Server URL (can\'t be empty)</string>
+    <string name="settings_contacts_ldap_bind_dn_title">Bind DN</string>
+    <string name="settings_contacts_ldap_password_title">Password</string>
+    <string name="settings_contacts_ldap_use_tls_title">Use TLS</string>
+    <string name="settings_contacts_ldap_verbose_mode_title">Add LDAP logs to &appName; ones</string>
+    <string name="settings_contacts_ldap_search_base_title">Search base (can\'t be empty)</string>
+    <string name="settings_contacts_ldap_search_filter_title">Filter</string>
+    <string name="settings_contacts_ldap_max_results_title">Max results</string>
+    <string name="settings_contacts_ldap_request_timeout_title">Timeout (in seconds)</string>
+    <string name="settings_contacts_ldap_request_delay_title">Delay between two queries (in milliseconds)</string>
+    <string name="settings_contacts_ldap_min_characters_title">Min characters to start a query</string>
+    <string name="settings_contacts_ldap_name_attributes_title">Name attributes</string>
+    <string name="settings_contacts_ldap_sip_attributes_title">SIP attributes</string>
+    <string name="settings_contacts_ldap_sip_domain_title">SIP domain</string>
+    <string name="settings_contacts_ldap_saved_toast">LDAP server saved</string>
+    <string name="settings_contacts_ldap_error_toast">A error occurred, LDAP server not saved!</string>
+    <string name="settings_contacts_ldap_empty_field_error_toast">All fields must be filled</string>
+    <string name="settings_meetings_title">Meetings</string>
+    <string name="settings_meetings_show_past_meetings_title">Show past meetings</string>
+    <string name="settings_meetings_default_layout_title">Default layout</string>
+    <string name="settings_meetings_layout_active_speaker_label">Active speaker</string>
+    <string name="settings_meetings_layout_mosaic_label">Mosaic</string>
+    <string name="settings_network_title">Network</string>
+    <string name="settings_network_use_wifi_only">Use only Wi-Fi networks</string>
+    <string name="settings_network_allow_ipv6">Allow IPv6</string>
+    <string name="settings_user_interface_title">User interface</string>
+    <string name="settings_user_interface_auto_show_dialpad_title">Automatically open dialpad</string>
+    <string name="settings_user_interface_theme_title">Theme</string>
+    <string name="settings_user_interface_dark_theme_label">Dark theme</string>
+    <string name="settings_user_interface_light_theme_label">Light theme</string>
+    <string name="settings_user_interface_auto_theme_label">Auto</string>
+    <string name="settings_user_interface_color_title">Main color</string>
+    <string name="settings_tunnel_title">Tunnel</string>
+    <string name="settings_tunnel_main_host_label">Host</string>
+    <string name="settings_tunnel_main_port_label">Port</string>
+    <string name="settings_tunnel_dual_mode_label">Use two servers</string>
+    <string name="settings_tunnel_second_host_label">Second host</string>
+    <string name="settings_tunnel_second_port_label">Second port</string>
+    <string name="settings_tunnel_mode_label">Mode</string>
+    <string name="settings_tunnel_mode_disabled_label">Disabled</string>
+    <string name="settings_tunnel_mode_always_label">Always</string>
+    <string name="settings_tunnel_mode_auto_label">Auto</string>
+
+    <string name="settings_advanced_title">Advanced settings</string>
+    <string name="settings_advanced_print_logs_crashlytics_title">Help developers troubleshoot issues by sending logs to Crashlytics after a crash</string>
+    <string name="settings_advanced_start_at_boot_title">Start when device boots</string>
+    <string name="settings_advanced_keep_alive_service_title">Keep app alive using Service</string>
+    <string name="settings_advanced_device_id">Device ID</string>
+    <string name="settings_advanced_device_id_hint">Alpha-numerical characters only</string>
+    <string name="settings_advanced_upload_server_url">File sharing server URL</string>
+    <string name="settings_advanced_logs_upload_server_url">Logs sharing server URL</string>
+    <string name="settings_advanced_calls">Advanced calls settings</string>
+    <string name="settings_advanced_use_smff_format_for_call_recordings_title">Record video calls using H265/AV1</string>
+    <string name="settings_advanced_use_smff_format_for_call_recordings_subtitle">Will use a proprietary file format</string>
+    <string name="settings_advanced_media_encryption_title">Media encryption</string>
+    <string name="settings_advanced_media_encryption_mandatory_title">Media encryption mandatory</string>
+    <string name="settings_advanced_create_e2e_encrypted_conferences_title">Create end-to-end encrypted meetings &amp; group calls</string>
+    <string name="settings_advanced_early_media_title">Early-media</string>
+    <string name="settings_advanced_accept_early_media_title">Accept early media</string>
+    <string name="settings_advanced_ring_during_early_media_title">Ring during incoming early media call</string>
+    <string name="settings_advanced_allow_outgoing_early_media_title">Allow outgoing early media</string>
+    <string name="settings_advanced_auto_answer_title">Auto-answer</string>
+    <string name="settings_advanced_enable_auto_answer_incoming_calls_title">Auto answer incoming calls</string>
+    <string name="settings_advanced_enable_auto_answer_incoming_calls_after_delay_title">Delay before auto answering call</string>
+    <string name="settings_advanced_enable_auto_answer_incoming_calls_after_delay_hint">Delay in milliseconds</string>
+    <string name="settings_advanced_enable_auto_answer_video_send_receive">Auto answer with video enabled in both directions</string>
+    <string name="settings_advanced_remote_provisioning_url">Remote provisioning URL</string>
+    <string name="settings_advanced_download_apply_remote_provisioning">Download &amp; apply</string>
+    <string name="settings_advanced_audio_devices_title">Audio devices</string>
+    <string name="settings_advanced_input_audio_device_title">Default input audio device</string>
+    <string name="settings_advanced_output_audio_device_title">Default output audio device</string>
+    <string name="settings_advanced_audio_codecs_title">Audio codecs</string>
+    <string name="settings_advanced_audio_codecs_mono_subtitle">mono</string>
+    <string name="settings_advanced_audio_codecs_stereo_subtitle">stereo</string>
+    <string name="settings_advanced_video_codecs_title">Video codecs</string>
+    <string name="settings_advanced_go_to_android_app_settings_title">&appName; Android settings</string>
+
+    <string name="settings_developer_title">Developer settings</string>
+    <string name="settings_developer_show_title">Show developer settings</string>
+    <string name="settings_developer_two_more_clicks_required_toast">Click 2 more times to enable developer settings</string>
+    <string name="settings_developer_one_more_click_required_toast">Click 1 more time to enable developer settings</string>
+    <string name="settings_developer_enabled_toast">Developer settings enabled</string>
+    <string name="settings_developer_already_enabled_toast">Developer settings already enabled</string>
+    <string name="settings_developer_enable_vu_meters_title">Enable record/playback volume vu meters while in call</string>
+    <string name="settings_developer_enable_advanced_call_stats_title">Show advanced call statistics</string>
+    <string name="settings_developer_push_compatible_domains_list_title">List of push notifications compatible domains (comma separated)</string>
+    <string name="settings_developer_clear_native_friends_in_database_title">Clear imported contacts from native address book</string>
+    <string name="settings_developer_clear_native_friends_in_database_subtitle">They will be imported again the next time the app starts unless you remove the contacts permission</string>
+    <string name="settings_developer_cleared_native_friends_in_database_toast">Imported contacts have been deleted</string>
+    <string name="settings_developer_clear_orphan_auth_info_title">Clear authentication info no longer associated to any account</string>
+    <string name="settings_developer_no_auth_info_removed_toast">No orphan authentication info found</string>
+    <plurals name="settings_developer_cleared_auth_info_toast">
+        <item quantity="one">%s orphan authentication info removed</item>
+        <item quantity="other">%s orphans authentication info removed</item>
+    </plurals>
+
+    <!-- Account profile & settings -->
+    <string name="manage_account_title">Manage account</string>
+    <string name="manage_account_details_title">Details</string>
+    <string name="manage_account_devices_title">Devices</string>
+    <string name="manage_account_empty_devices_label">No device found…</string>
+    <string name="manage_account_add_picture">Add a picture</string>
+    <string name="manage_account_edit_picture">Edit picture</string>
+    <string name="manage_account_remove_picture">Remove picture</string>
+    <string name="manage_account_status_registration_status_title">Connection status</string>
+    <string name="manage_account_status_connected_summary">This account in online, everybody can call you.</string>
+    <string name="manage_account_status_disconnected_summary">This account in offline, probably because you aren\'t connected to internet right now.</string>
+    <string name="manage_account_status_cleared_summary">Account has been disabled, you won\'t receive any call or message.</string>
+    <string name="manage_account_status_progress_summary">Account is connecting to the server, please wait…</string>
+    <string name="manage_account_status_failed_summary">Account connection failed, check your settings.</string>
+    <string name="manage_account_international_prefix">International Prefix</string>
+    <string name="manage_account_dialog_international_prefix_help_message">Pick your country to allow &appName; to match your contacts.</string>
+    <string name="manage_account_settings">Account settings</string>
+    <string name="manage_account_delete">Sign out</string>
+    <string name="manage_account_choose_mode_title">Choose account mode</string>
+    <string name="manage_account_choose_mode_apply_label">Apply</string>
+    <string name="manage_account_e2e_encrypted_mode_default_title">End-to-end encrypted mode</string>
+    <string name="manage_account_e2e_encrypted_mode_interoperable_title">Interoperable mode</string>
+    <string name="manage_account_e2e_encrypted_mode_default_summary">This mode guarantee your data confidentiality. Our end-to-end encryption technology provide the highest level or security for your communications.</string>
+    <string name="manage_account_e2e_encrypted_mode_interoperable_summary">This mode allows you to enjoy all &appName; features while staying interoperable with any SIP service through point-to-point encryption.</string>
+    <string name="manage_account_device_remove">Remove</string>
+    <string name="manage_account_device_last_connection">Last connection:</string>
+    <string name="manage_account_dialog_remove_account_title">Sign out of your account?</string>
+    <string name="manage_account_dialog_remove_account_message">If you wish to delete your account permanently, go to: https://sip.linphone.org</string>
+    <string name="manage_account_outbound_proxy">Outbound SIP Proxy</string>
+    <string name="manage_account_dialog_outbound_proxy_help_message">If this field is filled, the outbound proxy will be enabled automatically. Leave it empty to disable it.</string>
+
+    <string name="account_settings_title">Account settings</string>
+    <string name="account_settings_push_notification_title">Allow push notifications</string>
+    <string name="account_settings_push_notification_not_available_title">Push notifications aren\'t available!</string>
+    <string name="account_settings_im_encryption_mandatory_title">IM encryption mandatory</string>
+    <string name="account_settings_sip_proxy_url_title">Registrar URI</string>
+    <string name="account_settings_outbound_proxy_title">Outbound SIP Proxy URI</string>
+    <string name="account_settings_nat_policy_title">NAT policy settings</string>
+    <string name="account_settings_stun_server_url_title">STUN/TURN server URL</string>
+    <string name="account_settings_enable_ice_title">Enable ICE</string>
+    <string name="account_settings_enable_turn_title">Enable TURN</string>
+    <string name="account_settings_turn_username_title">TURN username</string>
+    <string name="account_settings_turn_password_title">TURN password</string>
+    <string name="account_settings_avpf_title">AVPF</string>
+    <string name="account_settings_expire_title">Expire (in seconds)</string>
+    <string name="account_settings_conference_factory_uri_title">Conference factory URI</string>
+    <string name="account_settings_audio_video_conference_factory_uri_title">Audio/video conference factory URI</string>
+    <string name="account_settings_ccmp_server_url_title">CCMP server URL</string>
+    <string name="account_settings_lime_server_url_title">End-to-end encryption keys server URL</string>
+    <string name="account_settings_bundle_mode_title">Bundle mode</string>
+    <string name="account_settings_cpim_in_basic_conversations_title">Use CPIM in \"basic\" conversations</string>
+    <string name="account_settings_voicemail_uri_title">Voicemail URI</string>
+    <string name="account_settings_mwi_uri_title"> MWI server URI (Message Waiting Indicator)</string>
+    <string name="account_settings_apply_international_prefix_title">Format phone numbers using international prefix</string>
+    <string name="account_settings_replace_plus_by_00_title">Replace + by 00 when formatting phone numbers</string>
+    <string name="account_settings_update_password_title">Update password</string>
+
+    <string name="account_settings_dialog_invalid_password_title">Authentication needed</string>
+    <string name="account_settings_dialog_invalid_password_message">Connection failed because authentication is missing or invalid for account \n%s.\n\nYou can provide password again, or check your account configuration in the settings.</string>
+    <string name="account_settings_dialog_invalid_password_hint">Password</string>
+    <string name="account_failed_to_find_identity_toast">Failed to find matching account!</string>
+
+    <!-- Call history -->
+    <string name="history_call_start_title">New call</string>
+    <string name="history_call_start_search_bar_filter_hint">Search contact or history call</string>
+    <string name="history_call_start_create_group_call">Create a group call</string>
+    <string name="history_call_start_no_suggestion_nor_contact">No suggestion and no contact for the moment…</string>
+    <string name="history_group_call_start_dialog_set_subject">Set group call subject</string>
+    <string name="history_group_call_start_dialog_subject_hint">Group call subject</string>
+    <string name="history_list_empty_history">No call from/to this account was found…</string>
+    <string name="history_list_empty_missed_calls">No missed call…</string>
+    <string name="history_list_filter_all_calls">All calls</string>
+    <string name="history_list_filter_missed_calls">Missed</string>
+    <string name="history_list_change_selected_account_label">Change account</string>
+    <string name="history_group_call_go_to_conversation">Conversation</string>
+
+    <string name="history_dialog_delete_all_call_logs_title">Do you really want to delete all calls history?</string>
+    <string name="history_dialog_delete_all_call_logs_message">All calls will be removed from the history.</string>
+    <string name="history_dialog_delete_call_logs_title">Do you really want to delete the history with that person?</string>
+    <string name="history_dialog_delete_call_logs_message">All calls will be removed from the history.</string>
+    <string name="history_dialog_delete_call_log_title">Do you really want to delete this call log?</string>
+    <string name="history_dialog_delete_call_log_message">Only this entry will be removed.</string>
+
+    <!-- Contacts -->
+    <string name="contacts_list_empty">No contact for the moment…</string>
+    <string name="contacts_list_sip_empty">No SIP contact for the moment…</string>
+    <string name="contacts_change_filter_label">Change filter</string>
+    <string name="contacts_list_favourites_title">Favourites</string>
+    <string name="contacts_list_all_contacts_title">All contacts</string>
+    <string name="contacts_list_filter_popup_see_all">See all</string>
+    <string name="contacts_list_filter_popup_see_linphone_only">See &appName; contacts</string>
+    <string name="contacts_list_filter_popup_see_sip_only">See SIP contacts</string>
+    <string name="contacts_list_search_results_limit_reached_label">Search results limit reached, refine your search.</string>
+
+    <string name="contact_new_title">New contact</string>
+    <string name="contact_edit_title">Edit contact</string>
+    <string name="contact_editor_first_name">First name</string>
+    <string name="contact_editor_last_name">Last name</string>
+    <string name="contact_editor_company">Company</string>
+    <string name="contact_editor_job_title">Job title</string>
+    <string name="contact_editor_saved_changes_toast">Changes were successfully saved</string>
+    <string name="contact_editor_error_saving_changes_toast">Failed to save changes!</string>
+    <string name="contact_editor_saved_contact_toast">Contact was successfully created</string>
+    <string name="contact_editor_error_saving_contact_toast">Failed to create contact!</string>
+    <string name="contact_editor_dialog_abort_confirmation_title">Don\'t save changes?</string>
+    <string name="contact_editor_dialog_abort_confirmation_message">All changes will be lost</string>
+    <string name="contact_editor_mandatory_field_not_filled_toast">Please fill either first name, last name or company name</string>
+
+    <string name="contact_details_numbers_and_addresses_title">Phone numbers &amp; SIP addresses</string>
+    <string name="contact_details_company_name">Company:</string>
+    <string name="contact_details_job_title">Job title:</string>
+    <string name="contact_details_trust_title">Trust</string>
+    <string name="contact_details_no_device_found">No device found…</string>
+    <string name="contact_details_trusted_devices_count">Number of trusted devices:</string>
+    <string name="contact_details_actions_title">Other actions</string>
+    <string name="contact_details_edit">Edit</string>
+    <string name="contact_details_add_to_favourites">Add to favourites</string>
+    <string name="contact_details_remove_from_favourites">Remove from favourites</string>
+    <string name="contact_details_share">Share</string>
+    <string name="contact_details_delete">Delete</string>
+    <string name="contact_sms_invite_content">Hello, join me on &appName;! You can download it for free at %s</string>
+    <string name="contact_deleted_toast">Contact has been removed</string>
+    <string name="contact_details_phone_number_copied_to_clipboard_toast">Number copied into clipboard</string>
+
+    <string name="contact_dialog_increase_trust_level_title">Increase trust level</string>
+    <string name="contact_dialog_increase_trust_level_message">You\'re about to make a call to %1$s\'s device %2$s.\nDo you want to make the call?</string>
+    <string name="contact_dialog_devices_trust_help_title">Trust level</string>
+    <string name="contact_dialog_devices_trust_help_message">Check all of your contact devices to make sure your communications will be secured an unaltered.\nWhen all will be verified, you\'ll reach maximum trust level.</string>
+    <string name="contact_dialog_delete_title">Delete %s?</string>
+    <string name="contact_dialog_delete_message">This contact will be definitively removed.</string>
+    <string name="contact_dialog_pick_phone_number_or_sip_address_title">Choose a number or a SIP address</string>
+
+    <string name="contact_presence_status_online">Online</string>
+    <string name="contact_presence_status_was_online_on">Online on %s</string>
+    <string name="contact_presence_status_was_online_today_at">Online today at %s</string>
+    <string name="contact_presence_status_was_online_yesterday_at">Online yesterday at %s</string>
+    <string name="contact_presence_status_away">Away</string>
+    <string name="contact_presence_status_do_not_disturb">Do not disturb</string>
+    <string name="contact_call_action">Call</string>
+    <string name="contact_message_action">Message</string>
+    <string name="contact_video_call_action">Video Call</string>
+    <string name="contact_make_call_check_device_trust">Verify</string>
+    <string name="contact_device_without_name">Unnamed device</string>
+
+    <!-- Chat -->
+    <string name="conversations_list_empty">No conversation related to this account for the moment…</string>
+    <string name="conversations_list_is_being_removed_label">Removal in progress…</string>
+    <string name="conversations_last_message_format">%s:</string>
+    <plurals name="conversations_files_waiting_to_be_shared_toast">
+        <item quantity="one">%s file waiting to be shared</item>
+        <item quantity="other">%s files waiting to be shared</item>
+    </plurals>
+    <string name="conversations_text_waiting_to_be_shared_toast">Text is waiting to be shared</string>
+
+    <string name="conversation_action_mark_as_read">Mark as read</string>
+    <string name="conversation_action_mute">Mute</string>
+    <string name="conversation_action_unmute">Un-mute</string>
+    <string name="conversation_action_call">Call</string>
+    <string name="conversation_action_delete">Delete conversation</string>
+    <string name="conversation_action_leave_group">Leave the group</string>
+    <string name="conversation_action_configure_ephemeral_messages">Configure ephemeral messages</string>
+    <string name="conversation_ephemeral_messages_title">Ephemeral messages</string>
+    <string name="conversation_ephemeral_messages_subtitle">New messages will be automatically deleted once read by everyone.\nChoose a duration:</string>
+    <string name="conversation_ephemeral_messages_duration_disabled">Disabled</string>
+    <string name="conversation_ephemeral_messages_duration_one_minute">1 minute</string>
+    <string name="conversation_ephemeral_messages_duration_one_hour">1 hour</string>
+    <string name="conversation_ephemeral_messages_duration_one_day">1 day</string>
+    <string name="conversation_ephemeral_messages_duration_three_days">3 days</string>
+    <string name="conversation_ephemeral_messages_duration_one_week">1 week</string>
+    <string name="new_conversation_title">New conversation</string>
+    <string name="new_group_conversation_title">New group conversation</string>
+    <string name="conversation_invalid_empty_subject_toast">Please enter a name for the conversation</string>
+    <string name="new_conversation_search_bar_filter_hint">Search contact</string>
+    <string name="new_conversation_create_group">Create a group conversation</string>
+    <string name="new_conversation_no_contact">No contact and no suggestion for the moment…</string>
+    <string name="new_conversation_no_matching_contact">No matching result…</string>
+    <string name="conversation_text_field_hint">Say something…</string>
+    <plurals name="conversation_composing_label">
+        <item quantity="one">%s is composing…</item>
+        <item quantity="other">%s are composing…</item>
+    </plurals>
+    <string name="conversation_add_participants_title">Add participants</string>
+    <string name="conversation_reply_to_message_title">Replying to:</string>
+    <string name="conversation_menu_search_in_messages">Search</string>
+    <string name="conversation_menu_go_to_info">Conversation info</string>
+    <string name="conversation_menu_configure_ephemeral_messages">Ephemeral messages</string>
+    <string name="conversation_menu_media_files">Media</string>
+    <string name="conversation_menu_documents_files">Documents</string>
+    <string name="conversation_no_media_found">No media found…</string>
+    <string name="conversation_no_document_found">No document found…</string>
+    <string name="conversation_end_to_end_encrypted_event_title">End-to-end encrypted conversation</string>
+    <string name="conversation_end_to_end_encrypted_event_subtitle">Messages in this conversation are end-to-end encrypted. Only your correspondent can decrypt them.</string>
+    <string name="conversation_end_to_end_encrypted_bottom_sheet_title">Guaranteed confidentiality</string>
+    <string name="conversation_end_to_end_encrypted_bottom_sheet_message">Thanks to end-to-end encryption technology in &appName;, messages, calls and meetings confidentiality are guaranteed. No-one can decrypt exchanged data, not even ourselves.</string>
+    <string name="conversation_warning_unsafe_event_subtitle">Messages aren\'t end-to-end encrypted, make sure you don\'t share sensitive information!</string>
+    <string name="conversation_warning_unsafe_bottom_sheet_title">Unencrypted conversation</string>
+    <string name="conversation_warning_unsafe_bottom_sheet_message">Messages exchanged in this conversation can be intercepted and read by other people than your correspondent, confidentiality is not guaranteed!</string>
+    <string name="conversation_warning_disabled_because_not_secured_title">This conversation is not encrypted!</string>
+    <string name="conversation_warning_disabled_because_not_secured_subtitle">For your safety, this conversation was disabled.</string>
+    <string name="conversation_maximum_number_of_attachments_reached">Maximum number of attachments reached!</string>
+    <string name="conversation_dialog_set_subject">Set conversation subject</string>
+    <string name="conversation_dialog_edit_subject">Edit conversation subject</string>
+    <string name="conversation_dialog_subject_cant_be_empty_error">Subject is mandatory</string>
+    <string name="conversation_dialog_subject_hint">Conversation subject</string>
+    <string name="conversation_dialog_open_or_export_file_title">Open or export file?</string>
+    <string name="conversation_dialog_open_or_export_file_message">&appName; can\'t open this file.\n\nDo you want to open it in another app (if possible), or export it on your device?</string>
+    <string name="conversation_dialog_open_file_label">Open file</string>
+    <string name="conversation_dialog_export_file_label">Export file</string>
+    <string name="conversation_no_app_registered_to_handle_content_type_dialog_title">Open as plain text?</string>
+    <string name="conversation_no_app_registered_to_handle_content_type_dialog_message">No app found to open this kind of file.\n\nWould you like to try opening it as plain text?</string>
+    <string name="conversation_dialog_open_plain_text_label">Open as plain text</string>
+    <string name="conversation_failed_to_play_voice_recording_message">Voice recording cannot be played!</string>
+    <string name="conversation_message_deleted_toast">Message has been deleted</string>
+    <string name="conversation_failed_to_create_toast">Failed to create conversation!</string>
+    <string name="conversation_invalid_participant_due_to_security_mode_toast">Can\'t create conversation with a participant not on the same domain due to security restrictions!</string>
+    <string name="conversation_media_not_found_toast">Selected media wasn\'t found</string>
+    <string name="conversation_subject_changed_toast">Conversation subject has changed</string>
+    <string name="conversation_ephemeral_messages_enabled_toast">Ephemeral messages have been enabled</string>
+    <string name="conversation_ephemeral_messages_disabled_toast">Ephemeral messages have been disabled</string>
+    <string name="conversation_ephemeral_messages_lifetime_changed_toast">Ephemeral messages lifetime changed</string>
+    <string name="conversation_voice_recording_max_duration_reached_toast">Max duration reached</string>
+    <string name="conversation_failed_to_add_participant_to_group_conversation_toast">Failed to add participant(s) to conversation</string>
+    <string name="conversation_deleted_toast">Conversation was successfully deleted</string>
+    <string name="conversation_group_left_toast">You have left the group</string>
+    <string name="conversation_no_app_registered_to_handle_content_type_error_toast">No app found to open this kind of file</string>
+    <string name="conversation_to_display_no_found_toast">Conversation was not found</string>
+    <string name="conversation_search_no_match_found">No matching result found</string>
+    <string name="conversation_search_no_more_match">Last matching result reached</string>
+    <string name="conversation_take_picture_label">Take picture</string>
+    <string name="conversation_pick_file_from_gallery_label">Open gallery</string>
+    <string name="conversation_pick_any_file_label">Pick file</string>
+    <string name="conversation_file_cant_be_opened_error_toast">File can\'t be opened!</string>
+    <string name="conversation_pdf_password_protected_file_cant_be_opened_error_toast">Can\'t open password protected PDFs yet</string>
+    <string name="conversation_pdf_file_error_toast">Can\'t open this PDF, file may be corrupted</string>
+    <string name="conversation_editing_message_title">Message being edited</string>
+    <string name="conversation_message_edited_label">Edited</string>
+    <string name="conversation_delete_locally_label">Delete for me</string>
+    <string name="conversation_delete_for_everyone_label">Delete for everyone</string>
+    <string name="conversation_message_content_deleted_label"><i>This message has been deleted</i></string>
+    <string name="conversation_message_content_deleted_by_us_label"><i>You have deleted this message</i></string>
+    <string name="conversation_participants_list_header">Participants</string>
+    <string name="conversation_participants_list_empty">No participants found</string>
+
+    <string name="conversation_info_participants_list_title">Group members (%s)</string>
+    <string name="conversation_info_add_participants_label">Add participants</string>
+    <string name="conversation_info_participant_is_admin_label">Admin</string>
+    <string name="conversation_info_delete_history_action">Delete history</string>
+    <string name="conversation_info_admin_menu_remove_participant">Remove from the group</string>
+    <string name="conversation_info_admin_menu_set_participant_admin">Give admin rights</string>
+    <string name="conversation_info_admin_menu_unset_participant_admin">Remove admin rights</string>
+    <string name="conversation_info_menu_go_to_contact">See contact profile</string>
+    <string name="conversation_info_menu_add_to_contacts">Add to contacts</string>
+    <string name="conversation_info_dialog_delete_all_call_logs_title">Do you really want to delete all messages?</string>
+    <string name="conversation_info_dialog_delete_all_message">All messages will be removed from the history.</string>
+    <string name="conversation_info_dialog_delete_chat_room_title">Do you really want to delete this conversation?</string>
+    <string name="conversation_info_dialog_delete_chat_room_message">All messages will also be removed from the history.</string>
+    <string name="conversation_info_dialog_leave_group_chat_room_title">Do you really want to leave this conversation?</string>
+    <string name="conversation_info_dialog_leave_group_chat_room_message">You will no longer be able to send or receive new messages, but your message history will still be available.</string>
+    <string name="conversation_info_history_deleted_toast">History has been successfully deleted</string>
+    <string name="conversation_info_participant_added_to_conversation_toast">%s joined the conversation</string>
+    <string name="conversation_info_participant_removed_from_conversation_toast">%s left the conversation</string>
+    <string name="conversation_info_participant_has_been_granted_admin_rights_toast">%s is now admin</string>
+    <string name="conversation_info_participant_no_longer_has_admin_rights_toast">%s is no longer admin</string>
+    <string name="conversation_info_cant_find_contact_to_display_toast">Contact was not found</string>
+    <string name="conversation_info_no_address_to_add_to_contact_toast">No address to add to contact</string>
+    <string name="conversation_info_confirm_start_group_call_dialog_title">Start a group call?</string>
+    <string name="conversation_info_confirm_start_group_call_dialog_message">All participants will receive a call.</string>
+    <string name="conversation_info_confirm_participant_removal_dialog_title">Remove participant?</string>
+    <string name="conversation_info_confirm_participant_removal_dialog_message">This participant will be removed from the group conversation.</string>
+
+    <string name="conversation_event_conference_created">You have joined the group</string>
+    <string name="conversation_event_conference_destroyed">You have left the group</string>
+    <string name="conversation_event_participant_added">%s has joined</string>
+    <string name="conversation_event_participant_removed">%s has left</string>
+    <string name="conversation_event_device_added">new device for %s</string>
+    <string name="conversation_event_device_removed">device for %s removed</string>
+    <string name="conversation_event_subject_changed">new subject: %s</string>
+    <string name="conversation_event_admin_set">%s is admin</string>
+    <string name="conversation_event_admin_unset">%s is no longer admin</string>
+    <string name="conversation_event_ephemeral_messages_enabled">Ephemeral messages have been enabled</string>
+    <string name="conversation_event_ephemeral_messages_disabled">Ephemeral messages have been disabled</string>
+    <string name="conversation_event_ephemeral_messages_lifetime_changed">Ephemeral lifetime is now %s</string>
+    <string name="conversation_event_security_event_lime_identity_key_changed">LIME identity key changed for %s</string>
+    <string name="conversation_event_security_event_man_in_the_middle_detected">Man-in-the-middle attack detected for %s</string>
+    <string name="conversation_event_security_event_level_downgraded">Security level decreased because of %s</string>
+    <string name="conversation_event_security_event_max_participant_count_exceeded">Max participant count exceeded by %s</string>
+
+    <string name="conversation_details_media_documents_title">Media &amp; documents</string>
+    <string name="conversation_media_list_title">Shared media</string>
+    <string name="conversation_document_list_title">Shared documents</string>
+
+    <string name="conversation_forward_message_title">Forward message to…</string>
+    <string name="conversation_message_forwarded_toast">Message was forwarded</string>
+    <string name="conversation_message_forward_cancelled_toast">Message forward was cancelled</string>
+
+    <string name="message_delivery_info_read_title">Read %s</string>
+    <string name="message_delivery_info_received_title">Received %s</string>
+    <string name="message_delivery_info_sent_title">Sent %s</string>
+    <string name="message_delivery_info_error_title">Error %s</string>
+    <string name="message_reactions_info_all_title">Reactions %s</string>
+    <string name="message_reactions_info_emoji_title">%1$s %2$s</string>
+    <string name="message_reaction_click_to_remove_label">Click to remove</string>
+    <string name="message_forwarded_label">Forwarded</string>
+
+    <string name="message_meeting_invitation_content_description">meeting invite:</string>
+    <string name="message_meeting_invitation_updated_content_description">meeting updated:</string>
+    <string name="message_meeting_invitation_cancelled_content_description">meeting cancelled:</string>
+    <string name="message_voice_message_content_description">voice message</string>
+
+    <!-- Scheduled conferences -->
+    <string name="meetings_list_no_meeting_for_today">No meeting scheduled for today</string>
+
+    <string name="meeting_schedule_title">New meeting</string>
+    <string name="meeting_schedule_meeting_label">Meeting</string>
+    <string name="meeting_schedule_broadcast_label">Broadcast</string>
+    <string name="meeting_schedule_broadcast_help">Info about broadcast.\n<u>Learn more</u></string>
+    <string name="meeting_schedule_subject_hint">Add title…</string>
+    <string name="meeting_schedule_pick_start_date_title">Choose the start date</string>
+    <string name="meeting_schedule_pick_start_time_title">Choose the start time</string>
+    <string name="meeting_schedule_pick_end_time_title">Choose the end time</string>
+    <string name="meeting_schedule_timezone_title">Timezone</string>
+    <string name="meeting_schedule_one_time_label">One time</string>
+    <string name="meeting_schedule_description_hint">Add description</string>
+    <string name="meeting_schedule_add_participants_title">Add participants</string>
+    <string name="meeting_schedule_add_more_participants_title">Click to add more participants</string>
+    <string name="meeting_schedule_add_speaker_title">Add speaker</string>
+    <string name="meeting_schedule_send_invitations_title">Send invitation to participants</string>
+    <string name="meeting_info_join_title">Join the meeting now</string>
+    <string name="meeting_info_organizer_label">Organizer</string>
+    <string name="meeting_info_export_as_calendar_event">Create calendar event</string>
+    <string name="meeting_info_deleted_toast">Meeting has been deleted</string>
+    <string name="meeting_info_not_found_toast">Meeting cannot be found!</string>
+    <string name="meeting_schedule_description_title">Description</string>
+    <string name="meeting_schedule_edit_title">Edit meeting</string>
+    <string name="meeting_schedule_notify_cancel_dialog_title">Meeting will be cancelled</string>
+    <string name="meeting_schedule_notify_cancel_dialog_message">Do you want to send a notification to all participants?</string>
+    <string name="meeting_schedule_delete_dialog_title">Delete meeting?</string>
+    <string name="meeting_schedule_delete_dialog_message">This meeting will only be removed from this device meetings list.</string>
+    <string name="meeting_cancel_action_label">Cancel meeting</string>
+    <string name="meeting_delete_action_label">Delete meeting</string>
+    <string name="meeting_info_created_toast">Meeting has been created</string>
+    <string name="meeting_info_updated_toast">Meeting has been updated</string>
+    <string name="meeting_info_cancelled_toast">Meeting has been cancelled</string>
+    <string name="meeting_info_cancelled">Meeting cancelled</string>
+    <string name="meeting_failed_to_schedule_toast">Failed to schedule meeting!</string>
+    <string name="meeting_failed_to_edit_schedule_toast">Failed to edit meeting!</string>
+    <string name="meeting_schedule_mandatory_field_not_filled_toast">Please fill the title and select at least one participant</string>
+    <string name="meeting_failed_to_send_invites_toast">Failed to send all invites to meeting!</string>
+    <string name="meeting_failed_to_send_part_of_invites_toast">Failed to send invites to some participants of the meeting!</string>
+    <string name="meeting_address_copied_to_clipboard_toast">Meeting address copied into clipboard</string>
+
+    <string name="meeting_waiting_room_join">Join</string>
+    <string name="meeting_waiting_room_cancel">Cancel</string>
+    <string name="meeting_waiting_room_joining_title">Connection in progress</string>
+    <string name="meeting_waiting_room_joining_subtitle">You\'ll be joining in a short moment</string>
+    <string name="meeting_waiting_room_failed_to_join_toast">Failed to join meeting!</string>
+
+    <!-- Call related -->
+    <string name="call_outgoing">Outgoing call</string>
+    <string name="call_audio_incoming">Incoming call</string>
+    <string name="call_video_incoming">Incoming video call</string>
+    <string name="call_locally_ended">You have ended the call</string>
+    <string name="call_remotely_ended">Correspondent has ended the call</string>
+    <string name="call_audio_incoming_for_account">Incoming call for %s</string>
+    <string name="call_video_incoming_for_account">Incoming video call for %s</string>
+    <string name="call_transfer_current_call_title">Transfer %s to…</string>
+    <string name="call_transfer_active_calls_label">Current calls</string>
+    <string name="call_transfer_no_active_call_label">No other call</string>
+    <string name="call_transfer_confirm_dialog_tittle">Confirm call transfer</string>
+    <string name="call_transfer_confirm_dialog_message">You\'re about to transfer call %1$s to %2$s.</string>
+
+    <string name="call_action_transfer">Transfer</string>
+    <string name="call_action_start_new_call">New call</string>
+    <string name="call_action_go_to_calls_list">Calls list</string>
+    <string name="call_action_show_dialer">Dialer</string>
+    <string name="call_action_show_messages">Messages</string>
+    <string name="call_action_pause_call">Pause</string>
+    <string name="call_action_resume_call">Resume</string>
+    <string name="call_action_record_call">Record</string>
+    <string name="call_action_stop_record_call">Stop recording</string>
+    <string name="call_action_hang_up">Hang up</string>
+    <string name="call_action_decline">Decline</string>
+    <string name="call_action_answer">Answer</string>
+    <string name="call_action_change_layout">Layout</string>
+    <string name="call_state_outgoing_progress">In progress</string>
+    <string name="call_state_outgoing_ringing">Ringing</string>
+    <string name="call_state_incoming_received">Incoming</string>
+    <string name="call_state_connected">Active</string>
+    <string name="call_state_paused">Paused</string>
+    <string name="call_state_paused_by_remote">Paused by remote</string>
+    <string name="call_state_resuming">Resuming…</string>
+    <string name="call_state_ended">Ended</string>
+    <string name="call_waiting_for_encryption_info">Waiting for encryption…</string>
+    <string name="call_zrtp_end_to_end_encrypted">End-to-end encrypted by ZRTP</string>
+    <string name="call_zrtp_point_to_point_encrypted">Point-to-point encrypted by ZRTP</string>
+    <string name="call_conference_end_to_end_encrypted">End-to-end encrypted</string>
+    <string name="call_do_zrtp_sas_validation_again">Validate ZRTP SAS again</string>
+    <string name="call_zrtp_sas_validation_required">Validation required</string>
+    <string name="call_srtp_point_to_point_encrypted">Point-to-point encrypted by SRTP</string>
+    <string name="call_not_encrypted">Call is not encrypted</string>
+    <string name="calls_list_title">Calls list</string>
+    <string name="call_is_being_recorded">Call is being recorded</string>
+    <string name="call_has_been_recorded">Call recording has been saved</string>
+    <string name="call_remote_is_recording">%s is recording</string>
+    <string name="calls_count_label">%s calls</string>
+    <string name="calls_paused_count_label">%s paused calls</string>
+    <string name="calls_list_dialog_merge_into_conference_title">Merge all calls into conference?</string>
+    <string name="calls_list_dialog_merge_into_conference_label">Create conference</string>
+    <string name="call_audio_record_permission_not_granted_toast">Audio record permission declined!</string>
+    <string name="call_camera_permission_not_granted_toast">Camera permission declined!</string>
+
+    <string name="call_dialog_zrtp_validate_trust_title">Validate the device</string>
+    <string name="call_dialog_zrtp_validate_trust_message">For your safety, we need to authenticate your correspondent device.\nPlease exchange your codes:</string>
+    <string name="call_dialog_zrtp_validate_trust_warning_message">For your safety, we need to re-authenticate your correspondent device.\nPlease re-exchange your codes:</string>
+    <string name="call_dialog_zrtp_validate_trust_local_code_label">Your code:</string>
+    <string name="call_dialog_zrtp_validate_trust_remote_code_label">Correspondent code:</string>
+    <string name="call_dialog_zrtp_validate_trust_letters_do_not_match">Nothing matches</string>
+    <string name="call_dialog_zrtp_security_alert_title">Security alert</string>
+    <string name="call_dialog_zrtp_security_alert_try_again">Try again</string>
+    <string name="call_dialog_zrtp_security_alert_message">This call confidentiality may be compromise!</string>
+
+    <string name="call_audio_device_type_microphone">Microphone</string>
+    <string name="call_audio_device_type_earpiece">Earpiece</string>
+    <string name="call_audio_device_type_speaker">Speaker</string>
+    <string name="call_audio_device_type_bluetooth">Bluetooth (%s)</string>
+    <string name="call_audio_device_type_hearing_aid">Hearing aid (%s)</string>
+    <string name="call_audio_device_type_headset">Headset</string>
+    <string name="call_audio_device_type_headphones">Headphones</string>
+    <string name="call_audio_device_type_hdmi">HDMI</string>
+
+    <string name="call_stats_audio_title">Audio</string>
+    <string name="call_stats_codec_label">Codec: %s</string>
+    <string name="call_stats_bandwidth_label">Bandwidth: %s</string>
+    <string name="call_stats_loss_rate_label">Loss rate: %s</string>
+    <string name="call_stats_jitter_buffer_label">Jitter buffer: %s</string>
+    <string name="call_stats_ice_label">ICE: %s</string>
+    <string name="call_stats_ip_family_label">IP Family: %s</string>
+    <string name="call_stats_video_title">Video</string>
+    <string name="call_stats_resolution_label">Resolution: %s</string>
+    <string name="call_stats_fps_label">FPS: %s</string>
+    <string name="call_stats_fec_title">FEC</string>
+    <string name="call_stats_fec_lost_packets_label">Lost packets: %s</string>
+    <string name="call_stats_fec_repaired_packets_label">Repaired packets: %s</string>
+    <string name="call_stats_fec_lost_bandwidth_label">Bandwidth: %s</string>
+
+    <string name="call_stats_media_encryption_title">Media encryption</string>
+    <string name="call_stats_media_encryption">Media encryption: %s</string>
+    <string name="call_stats_media_encryption_zrtp_post_quantum">Post Quantum ZRTP</string>
+    <string name="call_stats_zrtp_cipher_algo">Cipher algorithm: %s</string>
+    <string name="call_stats_zrtp_key_agreement_algo">Key agreement algorithm: %s</string>
+    <string name="call_stats_zrtp_hash_algo">Hash algorithm: %s</string>
+    <string name="call_stats_zrtp_auth_tag_algo">Authentication algorithm: %s</string>
+    <string name="call_stats_zrtp_sas_algo">SAS algorithm: %s</string>
+
+    <string name="call_history_deleted_toast">History has been deleted</string>
+    <string name="call_can_be_trusted_toast">Device validated</string>
+    <string name="call_transfer_in_progress_toast">Call is being transferred</string>
+    <string name="call_transfer_successful_toast">Call has been successfully transferred</string>
+    <string name="call_transfer_failed_toast">Call transfer failed!</string>
+    <string name="call_error_user_busy_toast">User is busy</string>
+    <string name="call_error_user_not_found_toast">User has not been found</string>
+    <string name="call_error_incompatible_media_params_toast">Incompatible media parameters</string>
+    <string name="call_error_io_error_toast">Service unavailable or network error</string>
+    <string name="call_error_server_timeout_toast">Server timeout</string>
+    <string name="call_error_temporarily_unavailable_toast">Temporarily unavailable</string>
+
+    <!-- Conference (in-call) -->
+    <string name="conference_share_link_title">Share invitation</string>
+    <string name="conference_call_empty">Waiting for other participants…</string>
+    <string name="conference_action_screen_sharing">Screen share</string>
+    <string name="conference_action_show_participants">Participants</string>
+    <string name="conference_failed_to_create_group_call_toast">Failed to create a group call!</string>
+    <string name="conference_failed_to_merge_calls_into_conference_toast">Failed to merge call!</string>
+    <plurals name="conference_participants_list_title">
+        <item quantity="one">Participant (%s)</item>
+        <item quantity="other">Participants (%s)</item>
+    </plurals>
+    <string name="conference_confirm_removing_participant_dialog_title">Remove %s from conference?</string>
+    <string name="conference_confirm_removing_participant_dialog_message">Are you sure you want to remove this participant from the conference?</string>
+    <string name="conference_participant_was_kicked_out_toast">Participant was kicked out of conference</string>
+    <string name="conference_participant_joining_text">Joining…</string>
+    <string name="conference_participant_paused_text">Paused</string>
+    <string name="conference_active_speaker_is_screen_sharing">is sharing its screen</string>
+    <string name="conference_failed_to_add_participant_invalid_address_toast">Invalid SIP address, can\'t be added to conference</string>
+
+    <string name="conference_layout_grid">Mosaic</string>
+    <string name="conference_layout_active_speaker">Speaker</string>
+    <string name="conference_layout_audio_only">Audio only</string>
+    <string name="conference_too_many_participants_for_mosaic_layout_toast">Too many participants for mosaic layout</string>
+
+    <string name="conference_remotely_hosted_title">Remote group call</string>
+    <string name="conference_locally_hosted_title">Local group call</string>
+
+    <!-- Call records -->
+    <string name="recordings_title">Recordings</string>
+    <string name="recordings_list_empty">No recording for the moment…</string>
+
+    <!-- Android Auto UI texts -->
+    <string name="car_favorites_contacts_title">Favorites</string>
+    <string name="car_favorites_contacts_list_empty">No favorite contact yet</string>
+
+    <!-- Various menu entries -->
+    <string name="menu_add_address_to_contacts">Add to contacts</string>
+    <string name="menu_see_existing_contact">See contact</string>
+    <string name="menu_copy_sip_address">Copy SIP address</string>
+    <string name="menu_copy_phone_number">Copy phone number</string>
+    <string name="menu_delete_history">Delete history</string>
+    <string name="menu_delete_selected_item">Delete</string>
+    <string name="menu_invite">Invite</string>
+    <string name="menu_resend_chat_message">Re-send</string>
+    <string name="menu_show_imdn">Delivery status</string>
+    <string name="menu_edit_chat_message">Edit</string>
+    <string name="menu_reply_to_chat_message">Reply</string>
+    <string name="menu_forward_chat_message">Forward</string>
+    <string name="menu_copy_chat_message">Copy</string>
+    <string name="menu_export_selected_item">Download</string>
+    <string name="menu_share_selected_item">Share</string>
+
+    <!-- Colors -->
+    <string name="orange">Orange</string>
+    <string name="terracotta">Terracotta</string>
+    <string name="lavender">Lavender</string>
+    <string name="honey">Honey</string>
+    <string name="burgundy">Burgundy</string>
+    <string name="mint">Mint</string>
+    <string name="coral">Coral</string>
+    <string name="plum">Plum</string>
+    <string name="titanium">Titanium</string>
+    <string name="mineral_blue">Mineral Blue</string>
+
+    <!-- Misc -->
+    <string name="list_filter_no_result_found">No result found…</string>
+    <string name="multiple_participants_selection_placeholder">Selected participants will appear here</string>
+    <string name="connection_error_for_non_default_account">Account(s) connection error</string>
+    <plurals name="pending_notification_for_other_accounts">
+        <item quantity="one">%s notification for other account(s)</item>
+        <item quantity="other">%s notifications for other account(s)</item>
+    </plurals>
+    <string name="default_account_disabled">Selected account is currently disabled</string>
+    <string name="network_not_reachable">You aren\'t connected to internet</string>
+    <string name="network_is_not_wifi">Wi-Fi only mode enabled</string>
+    <string name="operation_in_progress_overlay">Operation in progress, please wait</string>
+    <string name="generic_address_picker_conversations_list_title">Conversations</string>
+    <string name="generic_address_picker_contacts_list_title">Contacts</string>
+    <string name="generic_address_picker_favorites_list_title">Favorites</string>
+    <string name="generic_address_picker_suggestions_list_title">Suggestions</string>
+    <string name="post_notifications_permission_not_granted">Post notifications permission not granted!</string>
+    <string name="full_screen_intent_permission_not_granted">Show incoming call permission not granted!</string>
+    <plurals name="mwi_messages_are_waiting">
+        <item quantity="one">%s new voice message</item>
+        <item quantity="other">%s new voice messages</item>
+    </plurals>
+
+    <!-- Keep <u></u> in the following strings translations! -->
+    <string name="welcome_carousel_skip"><u>Skip</u></string>
+    <string name="assistant_forgotten_password"><u>Forgotten or unknown password?</u></string>
+    <string name="call_zrtp_sas_validation_skip"><u>Skip</u></string>
+
+    <!-- Keep <b></b> in the following strings translations! -->
+    <string name="conversation_message_meeting_updated_label"><b>Meeting has been updated</b></string>
+    <string name="conversation_message_meeting_cancelled_label"><b>Meeting has been cancelled!</b></string>
+
+    <!-- Content description for accessibility -->
+    <string name="content_description_trusted_contact_icon">Contact is trusted</string>
+    <string name="content_description_not_trusted_contact_icon">Contact is not trusted!</string>
+    <string name="content_description_contact_online">Contact is online</string>
+    <string name="content_description_contact_away">Contact is not online</string>
+    <string name="content_description_open_drawer_menu_icon">Open drawer menu</string>
+    <string name="content_description_go_back_icon">Go back</string>
+    <string name="content_description_dismiss_notification">Dismiss notification</string>
+    <string name="content_description_save_changes">Save changes</string>
+    <string name="content_description_show_popup_menu">Show menu</string>
+    <string name="content_description_confirm_new_participants_list">Confirm new participants list</string>
+    <string name="content_description_click_for_more_info">Click to have more information</string>
+    <string name="content_description_click_to_remove_participant">Click to remove participant</string>
+    <string name="content_description_toggle_password_visibility">Toggles password visibility</string>
+    <string name="content_description_toggle_bottom_sheet">Expands/retracts bottom sheet</string>
+    <string name="content_description_hang_up_call">Terminates the call</string>
+    <string name="content_description_answer_audio_call">Answers the call</string>
+    <string name="content_description_answer_video_call">Answers the video call</string>
+    <string name="content_description_call_start">Starts a call</string>
+    <string name="content_description_call_start_video">Starts a video call</string>
+    <string name="content_description_toggle_video">Enables/disables sending your camera feed</string>
+    <string name="content_description_toggle_microphone">Mute/un-mute your microphone</string>
+    <string name="content_description_change_output_audio_device">Changes output audio device</string>
+    <string name="content_description_change_camera">Changes camera (front/back) being used</string>
+    <string name="content_description_paused_call">Call is in paused state</string>
+    <string name="content_description_show_call_statistics">Shows call statistics</string>
+    <string name="content_description_call_is_being_recorded">You are recording this call</string>
+    <string name="content_description_erase_last_input">Removes the last digit or character</string>
+    <string name="content_description_merge_calls_into_conference">Merges calls into a conference</string>
+    <string name="content_description_open_filter">Opens filter area</string>
+    <string name="content_description_cancel_filter">Closes filter area</string>
+    <string name="content_description_clear_filter">Clear current filter</string>
+    <string name="content_description_create_group_conversation">Creates the group conversation</string>
+    <string name="content_description_create_group_call">Starts the group call</string>
+    <string name="content_description_show_numpad">Shows the numpad</string>
+    <string name="content_description_spinner_caret">Click to show all available options</string>
+    <string name="content_description_conference_participant_muted">Participant is muted</string>
+    <string name="content_description_conference_participant_speaking">Participant is speaking</string>
+    <string name="content_description_add_participants">Add participants</string>
+    <string name="content_description_play_pause_audio_playback">Plays/pauses the audio playback</string>
+    <string name="content_description_play_pause_video_playback">Plays/pauses the video playback</string>
+    <string name="content_description_share_file">Share file</string>
+    <string name="content_description_save_file">Save file</string>
+    <string name="content_description_chat_bubble_image">Image attached to message</string>
+    <string name="content_description_chat_bubble_video">Video attached to message</string>
+    <string name="content_description_chat_bubble_file">File attached to message</string>
+    <string name="content_description_chat_bubble_reply">This message is a reply to a previous message</string>
+    <string name="content_description_chat_bubble_forward">This message was forwarded from another conversation</string>
+    <string name="content_description_chat_bubble_delivery_status">Click to have delivery status</string>
+    <string name="content_description_chat_bubble_toggle_voice_message_play_pause">Plays/pauses the voice message playback</string>
+    <string name="content_description_chat_remove_attachment">Remove this file from attachments</string>
+    <string name="content_description_chat_remove_attachments">Close attachments</string>
+    <string name="content_description_chat_muted">Conversation has been silenced</string>
+    <string name="content_description_chat_ephemeral_enabled">Ephemeral messages are enabled</string>
+    <string name="content_description_chat_scroll_to_bottom_or_first_unread">Scrolls to first unread message or to the bottom</string>
+    <string name="content_description_chat_close_participants_list">Closes participants list</string>
+    <string name="content_description_cancel_voice_message_recording">Cancels voice message recording</string>
+    <string name="content_description_stop_voice_message_recording">Stops voice message recording</string>
+    <string name="content_description_chat_start_voice_message_recording">Starts recording a voice message</string>
+    <string name="content_description_chat_send_message">Sends message in conversation</string>
+    <string name="content_description_chat_cancel_reply">Message will no longer be a reply to a previous message</string>
+    <string name="content_description_chat_cancel_edit">Cancels message edition</string>
+    <string name="content_description_chat_open_emoji_picker">Opens emoji picker</string>
+    <string name="content_description_chat_open_attach_file">Opens file picker</string>
+    <string name="content_description_chat_edit_conversation_subject">Click to edit the subject of this conversation</string>
+    <string name="content_description_chat_toggle_mute">Silences on/off this conversation</string>
+    <string name="content_description_chat_unsecured">This conversation isn\'t secured</string>
+    <string name="content_description_chat_search_message_up">Search up</string>
+    <string name="content_description_chat_search_message_down">Search down</string>
+    <string name="content_description_chat_create">Start a new conversation</string>
+    <string name="content_description_meeting_today">Scroll to today</string>
+    <string name="content_description_schedule_meeting">Schedule a meeting</string>
+    <string name="content_description_meeting_schedule">Schedule the meeting</string>
+    <string name="content_description_meeting_edit">Edit the meeting</string>
+    <string name="content_description_meeting_share">Share meeting address</string>
+    <string name="content_description_meeting_participants_list">Participants list</string>
+    <string name="content_description_contact_device_trusted">Device is trusted</string>
+    <string name="content_description_contact_edit">Edit contact</string>
+    <string name="content_description_contact_remove_field">Remove field</string>
+    <string name="content_description_contacts_list_filters">Show contacts list filters</string>
+    <string name="content_description_contact_create">Create a contact</string>
+    <string name="content_description_join_conference">Join the conference</string>
+    <string name="content_description_carddav_delete">Delete this CardDAV configuration</string>
+    <string name="content_description_carddav_save">Save CardDAV configuration</string>
+    <string name="content_description_ldap_delete">Delete this LDAP configuration</string>
+    <string name="content_description_ldap_save">Save LDAP configuration</string>
+    <string name="content_description_play_call_recording">Plays the call recording</string>
+    <string name="content_description_go_to_conversation">Go to conversation</string>
+    <string name="content_description_copy_text_to_clipboard">Copy text to clipboard</string>
+    <string name="content_description_voicemail_available">Voice message are available</string>
+    <string name="content_description_call_voicemail">Long press to dial voicemail</string>
+    <string name="content_description_cancel_files_or_text_pending_sharing">Click to cancel files or text pending sharing</string>
+    <string name="content_description_close_drawer_menu">Closes menu</string>
+
+    <!-- Copy of private hosts_allowlist_sample in androidx.car.app:app:1.7.0-beta01, as they recommend it -->
+    <string-array name="hosts_allowlist_sample_copy" translatable="false">
+        <item>fdb00c43dbde8b51cb312aa81d3b5fa17713adb94b28f598d77f8eb89daceedf,
+            com.google.android.projection.gearhead</item>
+
+        <item>70811a3eacfd2e83e18da9bfede52df16ce91f2e69a44d21f18ab66991130771,
+            com.google.android.projection.gearhead</item>
+
+        <item>1975b2f17177bc89a5dff31f9e64a6cae281a53dc1d1d59b1d147fe1c82afa00,
+            com.google.android.projection.gearhead</item>
+
+        <item>c241ffbc8e287c4e9a4ad19632ba1b1351ad361d5177b7d7b29859bd2b7fc631,
+            com.google.android.apps.automotive.templates.host</item>
+
+        <item>dd66deaf312d8daec7adbe85a218ecc8c64f3b152f9b5998d5b29300c2623f61,
+            com.google.android.apps.automotive.templates.host</item>
+
+        <item>50e603d333c6049a37bd751375d08f3bd0abebd33facd30bd17b64b89658b421,
+            com.google.android.apps.automotive.templates.host</item>
+        </string-array>
+
+    <string name="managed_config_uri_title" translatable="false">Remote provisioning URL</string>
+    <string name="managed_config_uri_description" translatable="false">URL of the XML configuration file to fetch and apply on startup.</string>
+    <string name="managed_xml_config_title" translatable="false">Inline XML configuration</string>
+    <string name="managed_xml_config_description" translatable="false">Raw XML provisioning content applied on startup.</string>
+    <string name="managed_root_ca_title" translatable="false">Root CA certificate</string>
+    <string name="managed_root_ca_description" translatable="false">PEM-encoded root certificate(s) used to validate TLS connections.</string>
+</resources>

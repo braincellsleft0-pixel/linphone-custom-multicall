@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="goToInfoClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="searchClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="muteClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="unmuteClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="configureEphemeralMessagesClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="mediaClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="documentsClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="conversationMuted"
+            type="Boolean" />
+        <variable
+            name="ephemeralMessagesAvailable"
+            type="Boolean" />
+        <variable
+            name="readOnlyConversation"
+            type="Boolean" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingEnd="@dimen/popup_menu_padding"
+        android:paddingStart="@dimen/popup_menu_padding"
+        android:background="@drawable/shape_round_popup_menu_background">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/popup_menu_item"
+            android:id="@+id/info"
+            android:onClick="@{goToInfoClickListener}"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/conversation_menu_go_to_info"
+            android:drawableStart="@drawable/info"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/search"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/popup_menu_item"
+            android:id="@+id/search"
+            android:onClick="@{searchClickListener}"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/conversation_menu_search_in_messages"
+            android:drawableStart="@drawable/magnifying_glass"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/info"
+            app:layout_constraintBottom_toTopOf="@id/mute"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/popup_menu_item"
+            android:id="@+id/mute"
+            android:onClick="@{muteClickListener}"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/conversation_action_mute"
+            android:drawableStart="@drawable/bell_slash"
+            android:visibility="@{conversationMuted || readOnlyConversation ? View.GONE : View.VISIBLE}"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/search"
+            app:layout_constraintBottom_toTopOf="@id/unmute"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/popup_menu_item"
+            android:id="@+id/unmute"
+            android:onClick="@{unmuteClickListener}"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/conversation_action_unmute"
+            android:drawableStart="@drawable/bell"
+            android:visibility="@{conversationMuted &amp;&amp; !readOnlyConversation ? View.VISIBLE : View.GONE, default=gone}"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/mute"
+            app:layout_constraintBottom_toTopOf="@id/ephemeral"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/popup_menu_item"
+            android:id="@+id/ephemeral"
+            android:onClick="@{configureEphemeralMessagesClickListener}"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/conversation_menu_configure_ephemeral_messages"
+            android:drawableStart="@drawable/clock_countdown"
+            android:visibility="@{ephemeralMessagesAvailable &amp;&amp; !readOnlyConversation ? View.VISIBLE : View.GONE}"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/unmute"
+            app:layout_constraintBottom_toTopOf="@id/media"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/popup_menu_item"
+            android:id="@+id/media"
+            android:onClick="@{mediaClickListener}"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/conversation_menu_media_files"
+            android:drawableStart="@drawable/image"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/ephemeral"
+            app:layout_constraintBottom_toTopOf="@id/documents"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/popup_menu_item"
+            android:id="@+id/documents"
+            android:onClick="@{documentsClickListener}"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/conversation_menu_documents_files"
+            android:drawableStart="@drawable/file_pdf"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/media"
+            app:layout_constraintBottom_toTopOf="@id/bottom_anchor"/>
+
+        <View
+            android:id="@+id/bottom_anchor"
+            android:layout_width="wrap_content"
+            android:layout_height="1dp"
+            android:layout_marginBottom="@dimen/popup_menu_padding"
+            app:layout_constraintWidth_max="@dimen/popup_menu_width"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/documents"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

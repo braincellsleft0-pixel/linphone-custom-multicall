@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/tools">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="newMeetingClicked"
+            type="View.OnClickListener" />
+        <variable
+            name="filterClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="todayClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="viewModel"
+            type="org.linphone.ui.main.meetings.viewmodel.MeetingsListViewModel" />
+    </data>
+
+    <androidx.slidingpanelayout.widget.SlidingPaneLayout
+        android:id="@+id/sliding_pane_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:layout_width="@dimen/sliding_pane_left_fragment_width"
+            android:layout_height="match_parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.constraintlayout.widget.Group
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:constraint_referenced_ids="no_meeting_image, no_meeting_label"
+                    android:visibility="@{viewModel.meetings.empty &amp;&amp; !viewModel.isFilterEmpty ? View.VISIBLE : View.GONE, default=gone}" />
+
+                <include
+                    android:id="@+id/bottom_nav_bar"
+                    android:layout_width="@dimen/landscape_nav_bar_width"
+                    android:layout_height="match_parent"
+                    layout="@layout/bottom_nav_bar"
+                    bind:viewModel="@{viewModel}"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+
+                <include
+                    android:id="@+id/top_bar"
+                    layout="@layout/main_activity_top_bar"
+                    bind:viewModel="@{viewModel}"
+                    bind:showExtraAction="@{true}"
+                    bind:extraActionIcon="@{@drawable/calendar}"
+                    bind:extraActionClickListener="@{todayClickListener}"
+                    bind:extraActionContentDescription="@{@string/content_description_meeting_today}"
+                    bind:extraActionEnabled="@{true}"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/top_bar_height"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/bottom_nav_bar"
+                    app:layout_constraintEnd_toEndOf="parent"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/meetings_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="@dimen/top_bar_height"
+                    android:layout_marginStart="@dimen/landscape_nav_bar_width" />
+
+                <ImageView
+                    android:id="@+id/no_meeting_image"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:src="@drawable/illu"
+                    android:contentDescription="@null"
+                    app:layout_constraintHeight_max="200dp"
+                    app:layout_constraintDimensionRatio="1:1"
+                    app:layout_constraintVertical_chainStyle="packed"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/bottom_nav_bar"
+                    app:layout_constraintTop_toBottomOf="@id/top_bar"
+                    app:layout_constraintBottom_toTopOf="@id/no_meeting_label"  />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/section_header_style"
+                    android:id="@+id/no_meeting_label"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/list_filter_no_result_found"
+                    android:textAlignment="center"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/bottom_nav_bar"
+                    app:layout_constraintTop_toBottomOf="@id/no_meeting_image"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+
+                <com.google.android.material.progressindicator.CircularProgressIndicator
+                    android:id="@+id/fetch_in_progress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:indeterminate="true"
+                    android:visibility="@{viewModel.fetchInProgress ? View.VISIBLE : View.GONE}"
+                    app:indicatorColor="?attr/color_main1_500"
+                    app:layout_constraintStart_toEndOf="@id/bottom_nav_bar"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/new_meeting"
+                    android:onClick="@{newMeetingClicked}"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end|bottom"
+                    android:layout_margin="16dp"
+                    android:src="@drawable/video_conference_plus"
+                    android:contentDescription="@string/content_description_schedule_meeting"
+                    app:tint="?attr/color_on_main"
+                    app:backgroundTint="?attr/color_main1_500"
+                    app:shapeAppearanceOverlay="@style/rounded"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+
+                <include
+                    layout="@layout/sliding_pane_separator"
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:importantForAccessibility="no"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <include
+                layout="@layout/operation_in_progress"
+                bind:visibility="@{viewModel.cancelMeetingViewModel.operationInProgress}" />
+
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/meetings_nav_container"
+            android:name="androidx.navigation.fragment.NavHostFragment"
+            android:layout_width="@dimen/sliding_pane_right_fragment_width"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            app:defaultNavHost="false"
+            app:navGraph="@navigation/meetings_nav_graph"/>
+
+    </androidx.slidingpanelayout.widget.SlidingPaneLayout>
+
+</layout>

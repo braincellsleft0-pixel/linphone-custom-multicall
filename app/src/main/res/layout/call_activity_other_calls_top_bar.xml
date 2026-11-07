@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="viewModel"
+            type="org.linphone.ui.call.viewmodel.CallsViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="@{viewModel.showTopBar ? View.VISIBLE : View.GONE, default=gone}"
+        android:background="@{viewModel.showTopBar ? @drawable/color_success_500 : @drawable/color_black, default=@drawable/color_black}"
+        android:onClick="@{() -> viewModel.topBarClicked()}">
+
+        <ImageView
+            android:id="@+id/call_icon"
+            android:layout_width="@dimen/icon_size"
+            android:layout_height="@dimen/icon_size"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="10dp"
+            android:src="@{viewModel.callsTopBarIcon, default=@drawable/phone_pause}"
+            android:contentDescription="@null"
+            android:visibility="@{viewModel.showTopBar ? View.VISIBLE : View.GONE, default=gone}"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/call_display_name"
+            app:layout_constraintBottom_toBottomOf="@id/call_display_name"
+            app:tint="@color/bc_white" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style_800"
+            android:id="@+id/call_display_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
+            android:gravity="center_vertical"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:text="@{viewModel.callsTopBarLabel, default=`John Doe`}"
+            android:textColor="@color/bc_white"
+            android:textSize="14sp"
+            android:visibility="@{viewModel.showTopBar ? View.VISIBLE : View.GONE, default=gone}"
+            app:layout_constraintEnd_toStartOf="@id/call_time"
+            app:layout_constraintStart_toEndOf="@id/call_icon"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style"
+            android:id="@+id/call_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:gravity="center_vertical"
+            android:text="@{viewModel.callsTopBarStatus, default=`Paused`}"
+            android:textColor="@color/bc_white"
+            android:textSize="14sp"
+            android:visibility="@{viewModel.showTopBar ? View.VISIBLE : View.GONE, default=gone}"
+            app:layout_constraintEnd_toStartOf="@id/btn_minimize_top_bar"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <ImageView
+            android:id="@+id/btn_minimize_top_bar"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginEnd="10dp"
+            android:padding="4dp"
+            android:src="@drawable/caret_down"
+            android:contentDescription="Minimize to bubble"
+            android:clickable="true"
+            android:focusable="true"
+            app:tint="@color/bc_white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

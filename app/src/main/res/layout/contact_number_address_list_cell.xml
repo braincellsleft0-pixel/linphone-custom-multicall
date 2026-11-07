@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="model"
+            type="org.linphone.ui.main.contacts.model.ContactNumberOrAddressModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:onClick="@{() -> model.onClicked()}"
+        android:onLongClick="@{() -> model.onLongPress()}"
+        android:onContextClick="@{() -> model.onLongPress()}"
+        android:selected="@{model.selected}"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:background="@drawable/secondary_cell_background">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/header_style"
+            android:id="@+id/header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="@{model.sip ? @string/sip_address : model.label.length() > 0 ? @string/phone_number + ` (` + model.label + `)` : @string/phone_number, default=`Phone number (Home)`}"
+            android:maxLines="1"
+            android:ellipsize="end"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style"
+            android:id="@+id/number_or_address"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:text="@{model.displayedValue, default=`sip:johndoe@sip.linphone.org`}"
+            android:textSize="14sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/call"
+            app:layout_constraintTop_toBottomOf="@id/header"/>
+
+        <ImageView
+            android:id="@+id/call"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:src="@drawable/phone"
+            android:contentDescription="@string/content_description_call_start"
+            android:visibility="@{model.enabled ? View.VISIBLE : View.GONE}"
+            app:tint="?attr/color_main2_600"
+            app:layout_constraintTop_toTopOf="@id/header"
+            app:layout_constraintBottom_toBottomOf="@id/number_or_address"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/tools">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="backClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="editClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="menuClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="copyUriToClipboardClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="joinClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="viewModel"
+            type="org.linphone.ui.main.meetings.viewmodel.MeetingViewModel" />
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/color_background_contrast_in_dark_mode">
+
+            <ImageView
+                style="@style/icon_top_bar_button_style"
+                android:id="@+id/back"
+                android:onClick="@{backClickListener}"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:src="@drawable/caret_left"
+                android:contentDescription="@string/content_description_go_back_icon"
+                android:visibility="@{viewModel.showBackButton ? View.VISIBLE : View.GONE}"
+                app:tint="?attr/color_main1_500"
+                app:layout_constraintBottom_toBottomOf="@id/title"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@id/title" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/main_page_title_style"
+                android:id="@+id/title"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/top_bar_height"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                app:layout_constraintEnd_toStartOf="@id/edit"
+                app:layout_constraintStart_toEndOf="@id/back"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <ImageView
+                style="@style/icon_top_bar_button_style"
+                android:id="@+id/edit"
+                android:onClick="@{editClickListener}"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:src="@drawable/pencil_simple"
+                android:contentDescription="@string/content_description_meeting_edit"
+                android:visibility="@{viewModel.isEditable ? View.VISIBLE : View.GONE}"
+                app:tint="?attr/color_main2_500"
+                app:layout_constraintStart_toEndOf="@id/title"
+                app:layout_constraintEnd_toStartOf="@id/menu"
+                app:layout_constraintBottom_toBottomOf="@id/title"
+                app:layout_constraintTop_toTopOf="@id/title" />
+
+            <ImageView
+                style="@style/icon_top_bar_button_style"
+                android:id="@+id/menu"
+                android:onClick="@{menuClickListener}"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:src="@drawable/dots_three_vertical"
+                android:contentDescription="@string/content_description_show_popup_menu"
+                app:tint="?attr/color_main2_500"
+                app:layout_constraintStart_toEndOf="@id/edit"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="@id/title"
+                app:layout_constraintTop_toTopOf="@id/title" />
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/scrollView"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:fillViewport="true"
+                android:background="?attr/color_main2_000"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/title"
+                app:layout_constraintBottom_toTopOf="@id/separator_5">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        style="@style/default_text_style_800"
+                        android:id="@+id/subject"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:text="@{viewModel.subject, default=`Broadcast about agility in software development`}"
+                        android:textSize="20sp"
+                        android:textColor="?attr/color_main2_600"
+                        android:includeFontPadding="false"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:drawableStart="@{viewModel.isBroadcast ? @drawable/slideshow : @drawable/video_conference, default=@drawable/video_conference}"
+                        android:drawablePadding="8dp"
+                        android:drawableTint="?attr/color_main2_600"
+                        android:background="@color/transparent_color"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent" />
+
+                    <View
+                        android:id="@+id/separator"
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="16dp"
+                        android:background="?attr/color_separator"
+                        android:importantForAccessibility="no"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/subject" />
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        style="@style/default_text_style"
+                        android:id="@+id/sip_uri"
+                        android:onClick="@{copyUriToClipboardClickListener}"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:text="@{viewModel.sipUri, default=`linphone.com/wjre.fr`}"
+                        android:textSize="14sp"
+                        android:textColor="?attr/color_main2_600"
+                        android:includeFontPadding="false"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        android:drawableStart="@drawable/video_camera"
+                        android:drawableEnd="@drawable/copy"
+                        android:drawablePadding="8dp"
+                        android:drawableTint="?attr/color_main2_600"
+                        android:contentDescription="@string/content_description_meeting_share"
+                        app:layout_constraintTop_toBottomOf="@id/separator"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent" />
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        style="@style/default_text_style"
+                        android:id="@+id/date_time"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:text="@{viewModel.dateTime, default=`October 11th, 2023 | 17:00 - 18:00`}"
+                        android:textSize="14sp"
+                        android:textColor="?attr/color_main2_600"
+                        android:includeFontPadding="false"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        android:drawableStart="@drawable/clock"
+                        android:drawablePadding="8dp"
+                        android:drawableTint="?attr/color_main2_600"
+                        app:layout_constraintTop_toBottomOf="@id/sip_uri"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent" />
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        style="@style/default_text_style"
+                        android:id="@+id/timezone"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:text="@{viewModel.timezone, default=@string/meeting_schedule_timezone_title}"
+                        android:textSize="14sp"
+                        android:textColor="?attr/color_main2_600"
+                        android:includeFontPadding="false"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        android:drawableStart="@drawable/globe_hemisphere_west"
+                        android:drawablePadding="8dp"
+                        android:drawableTint="?attr/color_main2_600"
+                        app:layout_constraintTop_toBottomOf="@id/date_time"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent" />
+
+                    <View
+                        android:id="@+id/separator_2"
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="16dp"
+                        android:background="?attr/color_separator"
+                        android:importantForAccessibility="no"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/timezone" />
+
+                    <androidx.appcompat.widget.AppCompatTextView
+                        style="@style/default_text_style"
+                        android:id="@+id/description"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:text="@{viewModel.description, default=`Lorem ipsum dolor sit amet`}"
+                        android:textSize="14sp"
+                        android:textColor="?attr/color_main2_600"
+                        android:includeFontPadding="false"
+                        android:maxLines="3"
+                        android:ellipsize="end"
+                        android:drawableStart="@drawable/file_text"
+                        android:drawablePadding="8dp"
+                        android:drawableTint="?attr/color_main2_600"
+                        android:visibility="@{viewModel.description.length() > 0 ? View.VISIBLE : View.GONE}"
+                        app:layout_constraintTop_toBottomOf="@id/separator_2"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent" />
+
+                    <View
+                        android:id="@+id/separator_3"
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="16dp"
+                        android:background="?attr/color_separator"
+                        android:importantForAccessibility="no"
+                        android:visibility="@{viewModel.description.length() > 0 ? View.VISIBLE : View.GONE}"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/description" />
+
+                    <androidx.constraintlayout.widget.Barrier
+                        android:id="@+id/speakers_bottom_barrier"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:barrierDirection="bottom"
+                        app:constraint_referenced_ids="speakers, speakers_icon" />
+
+                    <ImageView
+                        android:id="@+id/speakers_icon"
+                        android:layout_width="@dimen/icon_size"
+                        android:layout_height="@dimen/icon_size"
+                        android:layout_marginTop="32dp"
+                        android:layout_marginStart="10dp"
+                        android:src="@drawable/user_square"
+                        android:contentDescription="@string/content_description_meeting_participants_list"
+                        android:visibility="@{viewModel.isBroadcast ? View.VISIBLE : View.GONE}"
+                        app:layout_constraintTop_toBottomOf="@id/separator_3"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:tint="?attr/color_main2_600" />
+
+                    <LinearLayout
+                        android:id="@+id/speakers"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:visibility="@{viewModel.isBroadcast ? View.VISIBLE : View.GONE}"
+                        android:orientation="vertical"
+                        entries="@{viewModel.speakers}"
+                        layout="@{@layout/meeting_participant_list_cell}"
+                        app:layout_constraintTop_toBottomOf="@id/separator_3"
+                        app:layout_constraintStart_toEndOf="@id/speakers_icon"
+                        app:layout_constraintEnd_toEndOf="parent" />
+
+                    <View
+                        android:id="@+id/separator_4"
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="16dp"
+                        android:background="?attr/color_separator"
+                        android:importantForAccessibility="no"
+                        android:visibility="@{viewModel.isBroadcast ? View.VISIBLE : View.GONE}"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/speakers_bottom_barrier" />
+
+                    <ImageView
+                        android:id="@+id/participants_icon"
+                        android:layout_width="@dimen/icon_size"
+                        android:layout_height="@dimen/icon_size"
+                        android:layout_marginTop="32dp"
+                        android:layout_marginStart="10dp"
+                        android:src="@drawable/users"
+                        android:contentDescription="@string/content_description_meeting_participants_list"
+                        app:layout_constraintTop_toBottomOf="@id/separator_4"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:tint="?attr/color_main2_600"/>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/participants"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:nestedScrollingEnabled="true"
+                        app:layout_constrainedHeight="true"
+                        app:layout_constraintVertical_bias="0"
+                        app:layout_constraintTop_toBottomOf="@id/separator_4"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/participants_icon"
+                        app:layout_constraintEnd_toEndOf="parent"/>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.core.widget.NestedScrollView>
+
+            <View
+                android:id="@+id/separator_5"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:background="?attr/color_separator"
+                android:importantForAccessibility="no"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/scrollView" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                style="@style/primary_button_label_style"
+                android:id="@+id/join"
+                android:onClick="@{joinClickListener}"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="@dimen/screen_bottom_margin"
+                android:text="@string/meeting_info_join_title"
+                app:layout_constraintWidth_max="@dimen/button_max_width"
+                app:layout_constraintVertical_bias="1"
+                app:layout_constraintTop_toBottomOf="@id/separator_5"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <include
+            layout="@layout/operation_in_progress"
+            bind:visibility="@{viewModel.operationInProgress}" />
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+</layout>

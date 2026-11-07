@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/tools">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="model"
+            type="org.linphone.ui.main.history.model.CallLogModel" />
+        <variable
+            name="onClickListener"
+            type="View.OnClickListener" />
+        <variable
+            name="onLongClickListener"
+            type="View.OnLongClickListener" />
+        <variable
+            name="onCallClickListener"
+            type="View.OnClickListener" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:onClick="@{onClickListener}"
+        android:onLongClickListener="@{onLongClickListener}"
+        android:onContextClick="@{onLongClickListener}"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:background="@drawable/primary_cell_background">
+
+        <include
+            android:id="@+id/avatar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            layout="@layout/contact_avatar"
+            bind:model="@{model.avatarModel}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style"
+            android:id="@+id/call_log_display_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="@{model.avatarModel.name, default=`John Doe`}"
+            android:textSize="14sp"
+            android:textColor="?attr/color_main2_800"
+            app:layout_constraintStart_toEndOf="@id/avatar"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/date_time"/>
+
+        <ImageView
+            android:id="@+id/call_status"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:src="@{model.iconResId, default=@drawable/outgoing_call}"
+            android:contentDescription="@null"
+            app:layout_constraintStart_toStartOf="@id/call_log_display_name"
+            app:layout_constraintTop_toTopOf="@id/date_time"
+            app:layout_constraintBottom_toBottomOf="@id/date_time" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style_300"
+            android:id="@+id/date_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:gravity="center"
+            android:text="@{model.dateTime, default=`13 aout 2023`}"
+            android:textSize="12sp"
+            app:layout_constraintStart_toEndOf="@id/call_status"
+            app:layout_constraintTop_toBottomOf="@id/call_log_display_name"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <ImageView
+            android:onClick="@{onCallClickListener}"
+            android:id="@+id/call"
+            android:layout_width="@dimen/large_icon_size"
+            android:layout_height="@dimen/large_icon_size"
+            android:padding="5dp"
+            android:layout_marginEnd="6dp"
+            android:src="@drawable/phone"
+            android:background="@drawable/circle_transparent_button_background"
+            android:contentDescription="@string/content_description_call_start"
+            android:visibility="@{model.wasConference ? View.GONE : View.VISIBLE}"
+            app:tint="?attr/color_main2_500"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/call_log_display_name"
+            app:layout_constraintBottom_toBottomOf="@id/date_time" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

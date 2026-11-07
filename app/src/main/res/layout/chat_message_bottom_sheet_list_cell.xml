@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/tools">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="model"
+            type="org.linphone.ui.main.chat.model.MessageBottomSheetParticipantModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="@{() -> model.clicked()}"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/primary_cell_background_alt">
+
+        <include
+            android:id="@+id/avatar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            layout="@layout/contact_avatar"
+            bind:model="@{model.avatarModel}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style"
+            android:id="@+id/name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@{model.avatarModel.name, default=`John Doe`}"
+            android:textSize="14sp"
+            android:layout_marginStart="10dp"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintStart_toEndOf="@id/avatar"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/date_time"
+            app:layout_constraintBottom_toTopOf="@id/sip_address"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style_300"
+            android:id="@+id/sip_address"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@{model.sipUri, default=`sip:johndoe@sip.linphone.org`}"
+            android:visibility="@{model.showSipUri ? View.VISIBLE : View.GONE, default=gone}"
+            android:textSize="12sp"
+            android:textColor="?attr/color_main2_500"
+            app:layout_constraintStart_toStartOf="@id/name"
+            app:layout_constraintTop_toBottomOf="@id/name"
+            app:layout_constraintEnd_toEndOf="@id/name"
+            app:layout_constraintBottom_toTopOf="@id/remove_reaction"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style_300"
+            android:id="@+id/remove_reaction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/message_reaction_click_to_remove_label"
+            android:textSize="12sp"
+            android:textColor="?attr/color_main2_400"
+            android:visibility="@{model.ourOwnReaction ? View.VISIBLE : View.GONE, default=gone}"
+            app:layout_constraintTop_toBottomOf="@id/sip_address"
+            app:layout_constraintStart_toStartOf="@id/name"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style_300"
+            android:id="@+id/date_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:text="@{model.value, default=`16:18`}"
+            android:textSize="12sp"
+            android:textColor="?attr/color_main2_600"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/name"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginEnd="10dp"
+            android:background="?attr/color_separator"
+            android:importantForAccessibility="no"
+            app:layout_constraintStart_toStartOf="@id/name"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

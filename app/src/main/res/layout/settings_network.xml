@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="viewModel"
+            type="org.linphone.ui.main.settings.viewmodel.SettingsViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="20dp"
+        android:background="@drawable/shape_squircle_white_background">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/settings_title_style"
+            android:onClick="@{() -> viewModel.toggleUseWifiOnly()}"
+            android:id="@+id/wifi_only_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="10dp"
+            android:text="@string/settings_network_use_wifi_only"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:labelFor="@id/wifi_only_switch"
+            app:layout_constraintTop_toTopOf="@id/wifi_only_switch"
+            app:layout_constraintBottom_toBottomOf="@id/wifi_only_switch"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/wifi_only_switch"/>
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            style="@style/material_switch_style"
+            android:id="@+id/wifi_only_switch"
+            android:onClick="@{() -> viewModel.toggleUseWifiOnly()}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="16dp"
+            android:checked="@{viewModel.useWifiOnly}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/settings_title_style"
+            android:onClick="@{() -> viewModel.toggleIpv6()}"
+            android:id="@+id/ipv6_enabled_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="10dp"
+            android:text="@string/settings_network_allow_ipv6"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:labelFor="@id/ipv6_enabled_switch"
+            app:layout_constraintTop_toTopOf="@id/ipv6_enabled_switch"
+            app:layout_constraintBottom_toBottomOf="@id/ipv6_enabled_switch"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/ipv6_enabled_switch"/>
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            style="@style/material_switch_style"
+            android:id="@+id/ipv6_enabled_switch"
+            android:onClick="@{() -> viewModel.toggleIpv6()}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="16dp"
+            android:checked="@{viewModel.allowIpv6}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/wifi_only_switch" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

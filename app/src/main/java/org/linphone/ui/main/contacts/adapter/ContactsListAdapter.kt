@@ -1,0 +1,166 @@
+/*
+ * Copyright (c) 2010-2023 Belledonne Communications SARL.
+ *
+ * This file is part of linphone-android
+ * (see https://www.linphone.org).
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.linphone.ui.main.contacts.adapter
+
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.annotation.UiThread
+import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.findViewTreeLifecycleOwner
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
+import org.linphone.R
+import org.linphone.databinding.ContactFavouriteListCellBinding
+import org.linphone.databinding.ContactListCellBinding
+import org.linphone.ui.GenericListAdapter
+import org.linphone.ui.main.contacts.model.ContactAvatarModel
+import org.linphone.utils.Event
+
+class ContactsListAdapter(
+    private val favourites: Boolean = false,
+    private val disableLongClick: Boolean = false
+) : GenericListAdapter<ContactAvatarModel, RecyclerView.ViewHolder>(ContactDiffCallback()) {
+    val contactClickedEvent: MutableLiveData<Event<ContactAvatarModel>> by lazy {
+        MutableLiveData()
+    }
+
+    val favouriteContactClickedEvent: MutableLiveData<Event<ContactAvatarModel>> by lazy {
+        MutableLiveData()
+    }
+
+    val contactLongClickedEvent: MutableLiveData<Event<ContactAvatarModel>> by lazy {
+        MutableLiveData()
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        if (favourites) {
+            val binding: ContactFavouriteListCellBinding = DataBindingUtil.inflate(
+                LayoutInflater.from(parent.context),
+                R.layout.contact_favourite_list_cell,
+                parent,
+                false
+            )
+            val viewHolder = FavouriteViewHolder(binding)
+            binding.apply {
+                lifecycleOwner = parent.findViewTreeLifecycleOwner()
+
+                setOnClickListener {
+                    favouriteContactClickedEvent.value = Event(model!!)
+                }
+
+                setOnLongClickListener {
+                    activateBindingRoot(this, viewHolder.bindingAdapterPosition)
+                    contactLongClickedEvent.value = Event(model!!)
+                    true
+                }
+            }
+            return viewHolder
+        } else {
+            val binding: ContactListCellBinding = DataBindingUtil.inflate(
+                LayoutInflater.from(parent.context),
+                R.layout.contact_list_cell,
+                parent,
+                false
+            )
+            val viewHolder = ViewHolder(binding)
+            binding.apply {
+                lifecycleOwner = parent.findViewTreeLifecycleOwner()
+
+                setOnClickListener {
+                    selectBindingRoot(this, viewHolder.bindingAdapterPosition)
+                    contactClickedEvent.value = Event(model!!)
+                }
+
+                if (!disableLongClick) {
+                    setOnLongClickListener {
+                        activateBindingRoot(this, viewHolder.bindingAdapterPosition)
+                        contactLongClickedEvent.value = Event(model!!)
+                        true
+                    }
+                }
+            }
+            return viewHolder
+        }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        if (favourites) {
+            (holder as FavouriteViewHolder).bind(getItem(position))
+        } else {
+            (holder as ViewHolder).bind(getItem(position))
+        }
+    }
+
+    inner class ViewHolder(
+        val binding: ContactListCellBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
+        @UiThread
+        fun bind(contactModel: ContactAvatarModel) {
+            with(binding) {
+                model = contactModel
+
+                setBindingRootSelectedAndActivatedIfNeeded(binding, bindingAdapterPosition)
+
+                val previousItem = bindingAdapterPosition - 1
+                val previousLetter = if (previousItem >= 0 && !getItem(previousItem).sortingName.isNullOrEmpty()) {
+                    getItem(previousItem).sortingName?.get(0).toString()
+                } else {
+                    ""
+                }
+
+                val currentLetter = if (!contactModel.sortingName.isNullOrEmpty()) {
+                    contactModel.sortingName?.get(0).toString()
+                } else {
+                    ""
+                }
+                val displayLetter = previousLetter.isEmpty() || currentLetter != previousLetter
+                firstContactStartingByThatLetter = displayLetter
+
+                executePendingBindings()
+            }
+        }
+    }
+
+    inner class FavouriteViewHolder(
+        val binding: ContactFavouriteListCellBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
+        @UiThread
+        fun bind(contactModel: ContactAvatarModel) {
+            with(binding) {
+                model = contactModel
+
+                setBindingRootSelectedAndActivatedIfNeeded(binding, bindingAdapterPosition)
+
+                executePendingBindings()
+            }
+        }
+    }
+
+    private class ContactDiffCallback : DiffUtil.ItemCallback<ContactAvatarModel>() {
+        override fun areItemsTheSame(oldItem: ContactAvatarModel, newItem: ContactAvatarModel): Boolean {
+            return oldItem.id == newItem.id
+        }
+
+        override fun areContentsTheSame(oldItem: ContactAvatarModel, newItem: ContactAvatarModel): Boolean {
+            return newItem.compare(oldItem)
+        }
+    }
+}

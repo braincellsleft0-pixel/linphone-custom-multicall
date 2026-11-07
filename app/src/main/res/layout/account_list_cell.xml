@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/tools">
+
+    <data>
+        <import type="android.view.View" />
+        <import type="org.linphone.core.RegistrationState" />
+        <variable
+            name="model"
+            type="org.linphone.ui.main.model.AccountModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:onClick="@{() -> model.setAsDefault()}"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/end_barrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="start"
+            app:constraint_referenced_ids="voicemail_count, voicemail_icon, notifications_count, menu" />
+
+        <View
+            android:id="@+id/background"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:selected="@{model.isDefault}"
+            android:background="@drawable/account_list_background"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <include
+            android:id="@+id/avatar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            layout="@layout/contact_avatar"
+            bind:model="@{model}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style"
+            android:id="@+id/name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="5dp"
+            android:text="@{model.displayName, default=`John Doe`}"
+            android:textSize="14sp"
+            android:textColor="?attr/color_main2_700"
+            android:layout_marginStart="10dp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            app:layout_constraintStart_toEndOf="@id/avatar"
+            app:layout_constraintEnd_toStartOf="@id/end_barrier"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/register_status"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:onClick="@{() -> model.refreshRegister()}"
+            style="@style/default_text_style_300"
+            android:id="@+id/register_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:background="@drawable/shape_squircle_main2_200_background"
+            android:backgroundTint="@{model.registrationState == RegistrationState.Ok ? @color/success_100 : model.registrationState == RegistrationState.Failed ? @color/danger_100 : model.registrationState == RegistrationState.Cleared ? @color/warning_100 : @color/offline_100, default=@color/success_100}"
+            android:gravity="center"
+            android:text="@{model.registrationStateLabel, default=@string/drawer_menu_account_connection_status_connected}"
+            android:textColor="@{model.registrationState == RegistrationState.Ok ? @color/success_900 : model.registrationState == RegistrationState.Failed ? @color/danger_600 : model.registrationState == RegistrationState.Cleared ? @color/warning_900 : @color/offline_900, default=@color/success_900}"
+            android:textSize="12sp"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toStartOf="@id/name"
+            app:layout_constraintEnd_toStartOf="@id/menu"
+            app:layout_constraintTop_toBottomOf="@id/name"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/default_text_style"
+            android:id="@+id/voicemail_count"
+            android:onClick="@{() -> model.callVoicemailUri()}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@{model.voicemailCount, default=`1`}"
+            android:textColor="?attr/color_danger_500"
+            android:textSize="13sp"
+            android:visibility="@{model.showMwi ? View.VISIBLE : View.GONE, default=gone}"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintBottom_toTopOf="@id/voicemail_icon"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="@id/voicemail_icon"
+            app:layout_constraintEnd_toEndOf="@id/voicemail_icon"/>
+
+        <ImageView
+            style="@style/default_text_style"
+            android:id="@+id/voicemail_icon"
+            android:onClick="@{() -> model.callVoicemailUri()}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:src="@drawable/voicemail"
+            android:visibility="@{model.showMwi ? View.VISIBLE : View.GONE, default=gone}"
+            android:contentDescription="@string/content_description_voicemail_available"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/voicemail_count"
+            app:layout_constraintEnd_toStartOf="@id/notifications_count"/>
+
+        <androidx.appcompat.widget.AppCompatTextView
+            style="@style/unread_count_text_style"
+            android:id="@+id/notifications_count"
+            android:layout_width="@dimen/unread_count_indicator_size"
+            android:layout_height="@dimen/unread_count_indicator_size"
+            android:layout_marginEnd="16dp"
+            android:text="@{String.valueOf(model.notificationsCount), default=`1`}"
+            android:visibility="@{model.notificationsCount > 0 ? View.VISIBLE : View.GONE, default=gone}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/menu"/>
+
+        <ImageView
+            style="@style/icon_top_bar_button_style"
+            android:onClick="@{() -> model.openMenu()}"
+            android:id="@+id/menu"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:contentDescription="@string/drawer_menu_manage_account"
+            android:src="@drawable/user_circle_gear"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/name"
+            app:layout_constraintBottom_toBottomOf="@id/register_status"
+            app:tint="?attr/color_main2_600"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

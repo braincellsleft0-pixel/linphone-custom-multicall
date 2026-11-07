@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:bind="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="handleClickedListener"
+            type="View.OnClickListener" />
+        <variable
+            name="model"
+            type="org.linphone.ui.main.history.model.NumpadModel" />
+        <variable
+            name="viewModel"
+            type="org.linphone.ui.call.viewmodel.CurrentCallViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/shape_call_bottom_sheet_background"
+        android:clickable="true"
+        android:focusable="true"
+        android:layoutDirection="ltr"
+        android:visibility="@{viewModel.fullScreenMode || viewModel.pipMode ? View.INVISIBLE : View.VISIBLE}"
+        app:behavior_hideable="true"
+        app:behavior_peekHeight="0dp"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+        bind:ignore="HardcodedText">
+
+        <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+            android:id="@+id/numpad_handle"
+            android:onClick="@{handleClickedListener}"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:padding="11dp"
+            android:src="@drawable/shape_drawer_handle"
+            app:tint="@color/bc_white"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatEditText
+            style="@style/default_text_style_300"
+            android:id="@+id/digits_history"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="30dp"
+            android:textColor="@color/bc_white"
+            android:textSize="30sp"
+            android:text="@{model.digits, default=`0123456789`}"
+            android:background="@color/transparent_color"
+            android:enabled="false"
+            android:inputType="number|phone"
+            android:gravity="center"
+            android:maxLines="1"
+            android:ellipsize="start"
+            app:layout_constraintTop_toTopOf="@id/backspace"
+            app:layout_constraintBottom_toBottomOf="@id/backspace"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/backspace"/>
+
+        <ImageView
+            android:id="@+id/backspace"
+            android:onClick="@{() -> model.onBackspaceClicked()}"
+            android:onLongClick="@{() -> model.onBackspaceLongClicked()}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="30dp"
+            android:src="@drawable/backspace_fill"
+            android:contentDescription="@string/content_description_erase_last_input"
+            android:padding="20dp"
+            android:elevation="3dp"
+            app:tint="@color/bc_white"
+            app:layout_constraintTop_toBottomOf="@id/numpad_handle"
+            app:layout_constraintStart_toEndOf="@id/digits_history"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <androidx.constraintlayout.helper.widget.Flow
+            android:id="@+id/flow"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="14dp"
+            android:layout_marginBottom="10dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/backspace"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:flow_horizontalStyle="spread"
+            app:flow_wrapMode="aligned"
+            app:flow_verticalGap="10dp"
+            app:flow_horizontalGap="10dp"
+            app:flow_maxElementsWrap="6"
+            app:constraint_referenced_ids="digit_1, digit_2, digit_3, digit_4, digit_5, digit_6, digit_7, digit_8, digit_9, digit_star, digit_0, digit_sharp" />
+
+        <include
+            style="@style/numpad_button_style"
+            android:id="@+id/digit_1"
+            layout="@layout/call_numpad_digit"
+            bind:digit="@{`1`}"
+            bind:model="@{model}"
+            app:layout_constraintTop_toBottomOf="@id/numpad_handle"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <include
+            style="@style/numpad_button_style"
+            android:id="@+id/digit_2"
+            layout="@layout/call_numpad_digit_with_letters"
+            bind:digit="@{`2`}"
+            bind:letters="@{`abc`}"
+            bind:model="@{model}"
+            app:layout_constraintWidth_max="@dimen/call_dtmf_button_max_width"
+            app:layout_constraintTop_toBottomOf="@id/numpad_handle"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <include
+            style="@style/numpad_button_style"
+            android:id="@+id/digit_3"
+            layout="@layout/call_numpad_digit_with_letters"
+            bind:digit="@{`3`}"
+            bind:letters="@{`def`}"
+            bind:model="@{model}"
+            app:layout_constraintWidth_max="@dimen/call_dtmf_button_max_width"
+            app:layout_constraintTop_toBottomOf="@id/numpad_handle"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <include
+            style="@style/numpad_button_style"
+            android:id="@+id/digit_4"
+            layout="@layout/call_numpad_digit_with_letters"
+            bind:digit="@{`4`}"
+            bind:letters="@{`ghi`}"
+            bind:model="@{model}"
+            app:layout_constraintWidth_max="@dimen/call_dtmf_button_max_width"
+            app:layout_constraintTop_toBottomOf="@id/numpad_handle"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <include
+            style="@style/numpad_button_style"
+            android:id="@+id/digit_5"
+            layout="@layout/call_numpad_digit_with_letters"
+            bind:digit="@{`5`}"
+            bind:letters="@{`jkl`}"
+            bind:model="@{model}"
+            app:layout_constraintWidth_max="@dimen/call_dtmf_button_max_width"
+            app:layout_constraintTop_toBottomOf="@id/numpad_handle"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <include
+            style="@style/numpad_button_style"
+            android:id="@+id/digit_6"
+            layout="@layout/call_numpad_digit_with_letters"
+            bind:digit="@{`6`}"
+            bind:letters="@{`mno`}"
+            bind:model="@{model}"
+            app:layout_constraintWidth_max="@dimen/call_dtmf_button_max_width"
+            app:layout_constraintTop_toBottomOf="@id/numpad_handle"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <include
+            style="@style/numpad_button_style"
+            android:id="@+id/digit_7"
+            layout="@layout/call_numpad_digit_with_letters"
+            bind:digit="@{`7`}"
+            bind:letters="@{`pqrs`}"
+            bind:model="@{model}"
+            app:layout_constraintWidth_max="@dimen/call_dtmf_button_max_width"
+            app:layout_constraintTop_toBottomOf="@id/numpad_handle"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <include
+            style="@style/numpad_button_style"
+            android:id="@+id/digit_8"
+            layout="@layout/call_numpad_digit_with_letters"
+            bind:digit="@{`8`}"
+            bind:letters="@{`tuv`}"
+            bind:model="@{model}"
+            app:layout_constraintWidth_max="@dimen/call_dtmf_button_max_width"
+            app:layout_constraintTop_toBottomOf="@id/numpad_handle"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <include
+            style="@style/numpad_button_style"
+            android:id="@+id/digit_9"
+            layout="@layout/call_numpad_digit_with_letters"
+            bind:digit="@{`9`}"
+            bind:letters="@{`wxyz`}"
+            bind:model="@{model}"
+            app:layout_constraintWidth_max="@dimen/call_dtmf_button_max_width"
+            app:layout_constraintTop_toBottomOf="@id/numpad_handle"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <include
+            style="@style/numpad_button_style"
+            android:id="@+id/digit_star"
+            layout="@layout/call_numpad_digit"
+            bind:digit="@{`*`}"
+            bind:model="@{model}"
+            app:layout_constraintWidth_max="@dimen/call_dtmf_button_max_width"
+            app:layout_constraintTop_toBottomOf="@id/numpad_handle"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <include
+            style="@style/numpad_button_style"
+            android:id="@+id/digit_0"
+            layout="@layout/call_numpad_digit"
+            bind:digit="@{`0`}"
+            bind:model="@{model}"
+            app:layout_constraintWidth_max="@dimen/call_dtmf_button_max_width"
+            app:layout_constraintTop_toBottomOf="@id/numpad_handle"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <include
+            style="@style/numpad_button_style"
+            android:id="@+id/digit_sharp"
+            layout="@layout/call_numpad_digit"
+            bind:digit="@{`#`}"
+            bind:model="@{model}"
+            app:layout_constraintWidth_max="@dimen/call_dtmf_button_max_width"
+            app:layout_constraintTop_toBottomOf="@id/numpad_handle"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>
