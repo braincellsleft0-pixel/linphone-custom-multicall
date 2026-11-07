@@ -19,20 +19,29 @@
  */
 package org.linphone.ui.call.bubble
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ObjectAnimator
+import android.animation.TimeInterpolator
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
 import android.graphics.Rect
+import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.view.Gravity
+import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
+import android.view.ViewPropertyAnimator
 import android.view.WindowManager
 import android.widget.TextView
 import androidx.annotation.UiThread
@@ -52,6 +61,7 @@ import org.linphone.core.CoreListenerStub
 import org.linphone.core.Reason
 import org.linphone.core.tools.Log
 import org.linphone.utils.LinphoneUtils
+import java.util.Locale
 import kotlin.math.abs
 
 /**
@@ -63,21 +73,19 @@ import kotlin.math.abs
 object FloatingBubbleManager {
     private const val TAG = "[Floating Bubble Manager]"
 
-    var isShowing: Boolean = false
-        private set
+    private enum class Phase { IDLE, SHOWING, VISIBLE, ENDING, HIDING }
+
+    @Volatile
+    private var phase = Phase.IDLE
+
+    val isShowing: Boolean
+        get() = phase != Phase.IDLE
 
     var isCallActivityVisible: Boolean = false
         private set
 
-    private var windowManager: WindowManager? = null
-    private var bubbleRootView: View? = null
-    private var layoutParams: WindowManager.LayoutParams? = null
-
-    private var tickerJob: Job? = null
-    private val scope = CoroutineScope(Dispatchers.Main)
-    private val mainHandler = Handler(Looper.getMainLooper())
-
-    private var currentFallbackNumber: String? = null
+    private val isDismissing: Boolean
+        get() = phase == Phase.ENDING || phase == Phase.HIDING
 
     enum class BubbleState(
         val label: String,
@@ -93,96 +101,29 @@ object FloatingBubbleManager {
         ENDED("Ended", 0xFFEF4444.toInt(), 0xFF9CA3AF.toInt(), false, false)
     }
 
+    private var windowManager: WindowManager? = null
+    private var bubbleRootView: View? = null          // = bubble_window_root
+    private var chipView: View? = null                // = bubble_collapsed_root
+    private var layoutParams: WindowManager.LayoutParams? = null
+
+    private var tickerJob: Job? = null
+    private val scope = CoroutineScope(Dispatchers.Main)
+    private val mainHandler = Handler(Looper.getMainLooper())
+
+    private var endedRunnable: Runnable? = null
+    private var currentFallbackNumber: String? = null
     private var lastKnownDisplayName: String = "Call"
+    private var lastDurationSeconds: Int = 0
+    private var lastAppliedState: BubbleState? = null
+    private var pulseAnimator: ObjectAnimator? = null
+
+    private var dockedRight: Boolean = true
+    private var lastDockedY: Int? = null
 
     @Volatile
     private var isInitialized = false
 
-    @Volatile
-    private var isDismissing = false
-
     private val terminatingCalls = java.util.Collections.synchronizedSet(java.util.HashSet<Call>())
-
-    private var dismissRunnable: Runnable? = null
-
-    private fun cancelPendingDismiss() {
-        dismissRunnable?.let {
-            mainHandler.removeCallbacks(it)
-            dismissRunnable = null
-        }
-        isDismissing = false
-        bubbleRootView?.let { v ->
-            v.animate().cancel()
-            v.alpha = 1f
-            v.scaleX = 1f
-            v.scaleY = 1f
-            v.translationY = 0f
-            val endBtn = v.findViewById<View>(R.id.bubble_collapsed_quick_end)
-            endBtn?.visibility = View.VISIBLE
-        }
-    }
-
-    private fun applyBubbleState(
-        view: View,
-        state: BubbleState,
-        displayName: String?,
-        durationSeconds: Int = 0,
-        activeCallCount: Int = 1
-    ) {
-        val txtCaller = view.findViewById<TextView>(R.id.bubble_collapsed_caller)
-        val txtStatus = view.findViewById<TextView>(R.id.bubble_collapsed_status)
-        val txtTimer = view.findViewById<TextView>(R.id.bubble_collapsed_timer)
-        val badge = view.findViewById<TextView>(R.id.bubble_collapsed_count_badge)
-        val statusDot = view.findViewById<View>(R.id.bubble_collapsed_status_dot)
-        val endBtn = view.findViewById<View>(R.id.bubble_collapsed_quick_end)
-
-        val name = displayName ?: lastKnownDisplayName
-        if (txtCaller?.text != name) {
-            txtCaller?.text = name
-        }
-
-        if (txtStatus?.text != state.label) {
-            txtStatus?.text = state.label
-        }
-        txtStatus?.setTextColor(state.statusColor)
-
-        statusDot?.background?.mutate()?.setTint(state.dotColor)
-
-        if (state.showTimer) {
-            val mins = durationSeconds / 60
-            val secs = durationSeconds % 60
-            val durationFormatted = String.format("%02d:%02d", mins, secs)
-            if (txtTimer?.text != durationFormatted) {
-                txtTimer?.text = durationFormatted
-            }
-            if (txtTimer?.visibility != View.VISIBLE) {
-                txtTimer?.visibility = View.VISIBLE
-            }
-        } else {
-            if (txtTimer?.visibility != View.GONE) {
-                txtTimer?.visibility = View.GONE
-            }
-        }
-
-        if (state != BubbleState.ENDED && activeCallCount > 1) {
-            val countText = "$activeCallCount calls"
-            if (badge?.text != countText) {
-                badge?.text = countText
-            }
-            if (badge?.visibility != View.VISIBLE) {
-                badge?.visibility = View.VISIBLE
-            }
-        } else {
-            if (badge?.visibility != View.GONE) {
-                badge?.visibility = View.GONE
-            }
-        }
-
-        val targetEndVisibility = if (state.showEndButton) View.VISIBLE else View.GONE
-        if (endBtn?.visibility != targetEndVisibility) {
-            endBtn?.visibility = targetEndVisibility
-        }
-    }
 
     // Coalesce bursts of call events into a single bubble refresh
     private var uiUpdateScheduled = false
@@ -206,10 +147,10 @@ object FloatingBubbleManager {
             }
             mainHandler.post {
                 if (!hasActiveCalls) {
-                    Log.i("$TAG No active calls remaining, showing call ended and dismissing bubble")
-                    showCallEndedAndDismiss()
+                    Log.i("$TAG No active calls remaining, calling onAllCallsEnded()")
+                    onAllCallsEnded()
                 } else {
-                    cancelPendingDismiss()
+                    reviveIfEnding()
                     if (!isCallActivityVisible && canDrawOverlays(coreContext.context)) {
                         if (!isShowing) {
                             show()
@@ -286,20 +227,22 @@ object FloatingBubbleManager {
         }
         stopDurationTicker()
         mainHandler.post {
-            bubbleRootView?.let { v ->
-                v.animate()
-                    .alpha(0f)
-                    .scaleX(0.75f)
-                    .scaleY(0.75f)
-                    .setDuration(120)
-                    .withEndAction {
-                        hideTemporarily()
-                        v.alpha = 1f
-                        v.scaleX = 1f
-                        v.scaleY = 1f
-                    }
-                    .start()
-            }
+            val chip = chipView ?: return@post
+            chip.animateSafe(
+                120,
+                android.view.animation.AccelerateInterpolator(),
+                {
+                    alpha(0f)
+                    scaleX(0.85f)
+                    scaleY(0.85f)
+                },
+                {
+                    hideTemporarily()
+                    chip.alpha = 1f
+                    chip.scaleX = 1f
+                    chip.scaleY = 1f
+                }
+            )
         }
     }
 
@@ -317,35 +260,49 @@ object FloatingBubbleManager {
             }
             mainHandler.post {
                 if (hasActiveCalls && canDrawOverlays(coreContext.context)) {
-                    cancelPendingDismiss()
+                    reviveIfEnding()
                     if (isShowing && bubbleRootView != null) {
-                        bubbleRootView?.let { v ->
-                            v.visibility = View.VISIBLE
-                            val density = coreContext.context.resources.displayMetrics.density
-                            v.pivotX = if (v.width > 0) v.width / 2f else (110f * density)
-                            v.pivotY = if (v.height > 0) v.height / 2f else (21f * density)
-                            v.alpha = 0f
-                            v.scaleX = 0.5f
-                            v.scaleY = 0.5f
-                            v.translationY = -15f
-                            v.animate()
-                                .alpha(1f)
-                                .scaleX(1f)
-                                .scaleY(1f)
-                                .translationY(0f)
-                                .setDuration(220)
-                                .setInterpolator(android.view.animation.OvershootInterpolator(1.2f))
-                                .start()
+                        val chip = chipView
+                        if (chip != null) {
+                            bubbleRootView?.visibility = View.VISIBLE
+                            if (chip.visibility != View.VISIBLE || chip.alpha < 0.95f) {
+                                chip.visibility = View.VISIBLE
+                                playEnterAnimation(chip)
+                            }
+                            startDurationTicker()
+                            updateUI()
+                        } else {
+                            show()
                         }
-                        startDurationTicker()
-                        updateUI()
                     } else {
                         show()
                     }
+                } else if (!hasActiveCalls) {
+                    onAllCallsEnded()
                 } else {
-                    dismiss()
+                    removeBubbleNow()
                 }
             }
+        }
+    }
+
+    @UiThread
+    fun revealForMinimize() {
+        if (!canDrawOverlays(coreContext.context)) return
+        isCallActivityVisible = false
+        reviveIfEnding()
+        val root = bubbleRootView
+        val chip = chipView
+        if (isShowing && root != null && chip != null) {
+            root.visibility = View.VISIBLE
+            if (chip.visibility != View.VISIBLE || chip.alpha < 0.95f) {
+                chip.visibility = View.VISIBLE
+                playEnterAnimation(chip)
+            }
+            startDurationTicker()
+            updateUI()
+        } else {
+            show()
         }
     }
 
@@ -365,35 +322,18 @@ object FloatingBubbleManager {
             init(context)
         }
 
-        cancelPendingDismiss()
-        isDismissing = false
+        reviveIfEnding()
 
         if (isShowing && bubbleRootView != null) {
-            val v = bubbleRootView
-            if (v != null && v.visibility == View.VISIBLE && v.alpha == 1f) {
-                // Bubble is ALREADY showing and fully visible on screen!
-                // DO NOT re-animate or bounce on repeated tel: clicks!
-                // Just update the UI (number and call count badge) smoothly!
+            val chip = chipView
+            if (chip != null && chip.visibility == View.VISIBLE && chip.alpha >= 0.95f) {
                 updateUI()
                 return
             }
-            if (v != null) {
-                v.visibility = View.VISIBLE
-                val density = context.resources.displayMetrics.density
-                v.pivotX = if (v.width > 0) v.width / 2f else (110f * density)
-                v.pivotY = if (v.height > 0) v.height / 2f else (21f * density)
-                v.alpha = 0f
-                v.scaleX = 0.5f
-                v.scaleY = 0.5f
-                v.translationY = -15f
-                v.animate()
-                    .alpha(1f)
-                    .scaleX(1f)
-                    .scaleY(1f)
-                    .translationY(0f)
-                    .setDuration(220)
-                    .setInterpolator(android.view.animation.OvershootInterpolator(1.2f))
-                    .start()
+            if (chip != null) {
+                bubbleRootView?.visibility = View.VISIBLE
+                chip.visibility = View.VISIBLE
+                playEnterAnimation(chip)
             }
             updateUI()
             return
@@ -404,7 +344,9 @@ object FloatingBubbleManager {
             val themedContext = ContextThemeWrapper(context, R.style.Theme_Linphone)
             val inflater = LayoutInflater.from(themedContext)
             val view = inflater.inflate(R.layout.floating_call_bubble, null)
+            val chip = view.findViewById<View>(R.id.bubble_collapsed_root)
             bubbleRootView = view
+            chipView = chip
 
             val layoutFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -413,9 +355,9 @@ object FloatingBubbleManager {
                 WindowManager.LayoutParams.TYPE_PHONE
             }
 
-            val metrics = context.resources.displayMetrics
-            val screenWidth = metrics.widthPixels
-            val screenHeight = metrics.heightPixels
+            val b = screenBounds()
+            val initialY = lastDockedY?.coerceIn(b.top, (b.bottom - dp(64f)).coerceAtLeast(b.top))
+                ?: (b.top + (b.height() * 0.18f).toInt())
 
             val params = WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
@@ -425,38 +367,28 @@ object FloatingBubbleManager {
                         WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
                 PixelFormat.TRANSLUCENT
             ).apply {
-                gravity = Gravity.TOP or Gravity.START
-                x = (screenWidth - (220 * metrics.density).toInt()).coerceAtLeast(16)
-                y = (screenHeight * 0.18).toInt()
+                gravity = if (dockedRight) (Gravity.TOP or Gravity.END) else (Gravity.TOP or Gravity.START)
+                x = edgeMargin
+                y = initialY
+                windowAnimations = 0
             }
             layoutParams = params
 
-            setupTouchAndGestures(view, params, screenWidth, screenHeight)
-            setupClickListeners(view)
-
-            // Populate UI BEFORE adding to WindowManager so dimensions measure accurately!
-            updateUI()
-
-            view.alpha = 0f
-            view.scaleX = 0.5f
-            view.scaleY = 0.5f
-            view.translationY = -15f
-            windowManager?.addView(view, params)
-            isShowing = true
-
-            view.post {
-                view.pivotX = view.width / 2f
-                view.pivotY = view.height / 2f
-                view.animate()
-                    .alpha(1f)
-                    .scaleX(1f)
-                    .scaleY(1f)
-                    .translationY(0f)
-                    .setDuration(240)
-                    .setInterpolator(android.view.animation.OvershootInterpolator(1.2f))
-                    .start()
+            chip.addOnLayoutChangeListener { v, _, _, _, _, _, _, _, _ ->
+                v.pivotX = v.width / 2f
+                v.pivotY = v.height / 2f
             }
 
+            setupTouchAndGestures(view, params)
+            setupClickListeners(view)
+
+            // Populate UI BEFORE adding to WindowManager
+            updateUI()
+
+            windowManager?.addView(view, params)
+            phase = Phase.VISIBLE
+
+            playEnterAnimation(chip)
             startDurationTicker()
             Log.i("$TAG Floating call bubble successfully displayed on screen")
         } catch (e: Exception) {
@@ -464,10 +396,116 @@ object FloatingBubbleManager {
         }
     }
 
+    private fun playEnterAnimation(chip: View) {
+        chip.alpha = 0f
+        chip.scaleX = 0.85f
+        chip.scaleY = 0.85f
+        chip.translationY = -dp(8f).toFloat()
+        chip.animateSafe(
+            220,
+            android.view.animation.OvershootInterpolator(0.9f),
+            {
+                alpha(1f)
+                scaleX(1f)
+                scaleY(1f)
+                translationY(0f)
+            }
+        )
+    }
+
+    /**
+     * The ONLY function that handles "all calls are over".
+     * Never terminates calls. Idempotent.
+     */
+    @UiThread
+    fun onAllCallsEnded() {
+        if (phase == Phase.ENDING || phase == Phase.HIDING) return
+        val root = bubbleRootView
+        if (root == null || phase == Phase.IDLE) {
+            removeBubbleNow()
+            return
+        }
+
+        phase = Phase.ENDING
+        stopDurationTicker()
+        org.linphone.ui.call.CallHandlerActivity.cancelAllPendingCalls()
+
+        // Same size, same position: only colours/text change (End button is INVISIBLE, not GONE)
+        applyBubbleState(root, BubbleState.ENDED, lastKnownDisplayName, lastDurationSeconds, 0)
+
+        endedRunnable = Runnable { fadeOutAndRemove(180L) }
+        mainHandler.postDelayed(endedRunnable!!, 900)
+    }
+
+    private fun fadeOutAndRemove(duration: Long) {
+        val chip = chipView ?: run {
+            removeBubbleNow()
+            return
+        }
+        phase = Phase.HIDING
+        chip.pivotX = chip.width / 2f
+        chip.pivotY = chip.height / 2f
+        chip.animateSafe(
+            duration,
+            android.view.animation.DecelerateInterpolator(),
+            {
+                alpha(0f)
+                scaleX(0.9f)
+                scaleY(0.9f)
+            },
+            {
+                removeBubbleNow()
+            }
+        )
+    }
+
+    /**
+     * Idempotent hard removal. Safe to call any number of times.
+     */
+    @UiThread
+    private fun removeBubbleNow() {
+        endedRunnable?.let { mainHandler.removeCallbacks(it) }
+        endedRunnable = null
+        stopDurationTicker()
+        stopStatusDotPulse()
+        val root = bubbleRootView
+        val chip = chipView
+        bubbleRootView = null
+        chipView = null
+        phase = Phase.IDLE
+        currentFallbackNumber = null
+        chip?.animate()?.cancel()
+        if (root != null && root.isAttachedToWindow) {
+            try {
+                windowManager?.removeViewImmediate(root)
+            } catch (e: Exception) {
+                Log.w("$TAG removeView: $e")
+            }
+        }
+        Log.i("$TAG Floating call bubble completely removed")
+    }
+
+    /**
+     * A new call arrived while the bubble was ending/hiding -> reuse the same view, no second bubble.
+     */
+    @UiThread
+    private fun reviveIfEnding() {
+        if (phase != Phase.ENDING && phase != Phase.HIDING) return
+        endedRunnable?.let { mainHandler.removeCallbacks(it) }
+        endedRunnable = null
+        chipView?.let {
+            it.animate().cancel()
+            it.alpha = 1f
+            it.scaleX = 1f
+            it.scaleY = 1f
+            it.translationY = 0f
+        }
+        phase = Phase.VISIBLE
+        startDurationTicker()
+    }
+
     @UiThread
     fun dismiss() {
-        isDismissing = true
-        cancelPendingDismiss()
         stopDurationTicker()
         org.linphone.ui.call.CallHandlerActivity.cancelAllPendingCalls()
         coreContext.postOnCoreThread { core ->
@@ -478,55 +516,19 @@ object FloatingBubbleManager {
                     } else {
                         call.terminate()
                     }
-                } catch (e: Exception) {}
+                } catch (_: Exception) {}
             }
             core.terminateAllCalls()
             terminatingCalls.clear()
         }
-        val viewToRemove = bubbleRootView
-        bubbleRootView = null
-        isShowing = false
-        currentFallbackNumber = null
-
-        if (viewToRemove != null) {
-            try {
-                viewToRemove.animate().cancel()
-                if (viewToRemove.alpha <= 0.05f) {
-                    try {
-                        windowManager?.removeView(viewToRemove)
-                    } catch (e: Exception) {}
-                    isDismissing = false
-                    return
-                }
-                val density = coreContext.context.resources.displayMetrics.density
-                viewToRemove.pivotX = if (viewToRemove.width > 0) viewToRemove.width / 2f else (110f * density)
-                viewToRemove.pivotY = if (viewToRemove.height > 0) viewToRemove.height / 2f else (21f * density)
-                viewToRemove.animate()
-                    .alpha(0f)
-                    .scaleX(0.88f)
-                    .scaleY(0.88f)
-                    .translationY(8f)
-                    .setDuration(160)
-                    .setInterpolator(android.view.animation.DecelerateInterpolator())
-                    .withEndAction {
-                        try {
-                            windowManager?.removeView(viewToRemove)
-                        } catch (e: Exception) {
-                            Log.e("$TAG Failed to remove bubble view: $e")
-                        }
-                        isDismissing = false
-                    }
-                    .start()
-            } catch (e: Exception) {
-                try {
-                    windowManager?.removeView(viewToRemove)
-                } catch (e2: Exception) {}
-                isDismissing = false
-            }
-        } else {
-            isDismissing = false
+        if (chipView == null || phase == Phase.IDLE) {
+            removeBubbleNow()
+            return
         }
-        Log.i("$TAG Floating call bubble dismissed")
+        if (phase == Phase.HIDING) return // already fading, do nothing
+        endedRunnable?.let { mainHandler.removeCallbacks(it) }
+        endedRunnable = null
+        fadeOutAndRemove(160L)
     }
 
     @UiThread
@@ -534,30 +536,212 @@ object FloatingBubbleManager {
         bubbleRootView?.visibility = View.GONE
     }
 
+    private inline fun View.animateSafe(
+        duration: Long,
+        interpolator: TimeInterpolator,
+        crossinline configure: ViewPropertyAnimator.() -> Unit,
+        noinline onFinished: (() -> Unit)? = null
+    ) {
+        animate().cancel()
+        val a = animate().setDuration(duration).setInterpolator(interpolator)
+        a.configure()
+        a.setListener(object : AnimatorListenerAdapter() {
+            private var cancelled = false
+
+            override fun onAnimationCancel(animation: Animator) {
+                cancelled = true
+            }
+
+            override fun onAnimationEnd(animation: Animator) {
+                a.setListener(null)
+                if (!cancelled) onFinished?.invoke()
+            }
+        })
+        a.start()
+    }
+
+    private fun dp(v: Float): Int = (v * coreContext.context.resources.displayMetrics.density).toInt()
+
+    private val edgeMargin: Int
+        get() = dp(2f)
+
+    private fun screenBounds(): Rect {
+        val wm = windowManager ?: return Rect(0, 0, 1080, 1920)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val m = wm.currentWindowMetrics
+            val i = m.windowInsets.getInsetsIgnoringVisibility(
+                android.view.WindowInsets.Type.systemBars() or android.view.WindowInsets.Type.displayCutout()
+            )
+            Rect(m.bounds.left + i.left, m.bounds.top + i.top, m.bounds.right - i.right, m.bounds.bottom - i.bottom)
+        } else {
+            val dm = android.util.DisplayMetrics()
+            @Suppress("DEPRECATION")
+            wm.defaultDisplay.getRealMetrics(dm)
+            val res = coreContext.context.resources
+            val sb = res.getIdentifier("status_bar_height", "dimen", "android").let {
+                if (it > 0) res.getDimensionPixelSize(it) else dp(24f)
+            }
+            Rect(0, sb, dm.widthPixels, dm.heightPixels)
+        }
+    }
+
+    private fun formatDuration(seconds: Int): String {
+        val s = seconds.coerceAtLeast(0)
+        val hrs = s / 3600
+        val mins = (s % 3600) / 60
+        val secs = s % 60
+        return if (hrs > 0) {
+            String.format(Locale.US, "%d:%02d:%02d", hrs, mins, secs)
+        } else {
+            String.format(Locale.US, "%02d:%02d", mins, secs)
+        }
+    }
+
+    private fun stateOf(call: Call): BubbleState {
+        return when (call.state) {
+            Call.State.Connected, Call.State.StreamsRunning -> BubbleState.CONNECTED
+            Call.State.Paused, Call.State.PausedByRemote, Call.State.Pausing -> BubbleState.HOLD
+            Call.State.OutgoingRinging, Call.State.OutgoingEarlyMedia -> BubbleState.RINGING
+            Call.State.OutgoingInit, Call.State.OutgoingProgress -> BubbleState.CALLING
+            else -> BubbleState.CONNECTED
+        }
+    }
+
+    private fun startStatusDotPulse(dot: View) {
+        if (pulseAnimator != null) return
+        pulseAnimator = ObjectAnimator.ofFloat(dot, "alpha", 1f, 0.3f).apply {
+            duration = 700
+            repeatMode = ValueAnimator.REVERSE
+            repeatCount = ValueAnimator.INFINITE
+            start()
+        }
+    }
+
+    private fun stopStatusDotPulse() {
+        pulseAnimator?.cancel()
+        pulseAnimator = null
+    }
+
+    private fun applyBubbleState(
+        view: View,
+        state: BubbleState,
+        displayName: String?,
+        durationSeconds: Int = 0,
+        activeCallCount: Int = 1
+    ) {
+        val txtCaller = view.findViewById<TextView>(R.id.bubble_collapsed_caller)
+        val txtStatus = view.findViewById<TextView>(R.id.bubble_collapsed_status)
+        val txtTimer = view.findViewById<TextView>(R.id.bubble_collapsed_timer)
+        val badge = view.findViewById<TextView>(R.id.bubble_collapsed_count_badge)
+        val iconContainer = view.findViewById<View>(R.id.bubble_collapsed_icon_container)
+        val statusDot = view.findViewById<View>(R.id.bubble_collapsed_status_dot)
+        val endBtn = view.findViewById<View>(R.id.bubble_collapsed_quick_end)
+
+        val name = displayName ?: lastKnownDisplayName
+        if (txtCaller?.text != name) {
+            txtCaller?.text = name
+        }
+
+        val statusLabel = if (state == BubbleState.ENDED) "Call ended" else state.label
+        if (txtStatus?.text != statusLabel) {
+            txtStatus?.text = statusLabel
+        }
+        if (lastAppliedState?.statusColor != state.statusColor) {
+            txtStatus?.setTextColor(state.statusColor)
+        }
+
+        if (lastAppliedState?.dotColor != state.dotColor) {
+            statusDot?.background?.mutate()?.setTint(state.dotColor)
+            val containerBg = iconContainer?.background?.mutate()
+            if (containerBg is GradientDrawable) {
+                containerBg.setStroke(dp(1.5f), state.dotColor)
+            }
+        }
+
+        if (statusDot != null) {
+            if (state == BubbleState.CALLING || state == BubbleState.RINGING) {
+                startStatusDotPulse(statusDot)
+            } else {
+                stopStatusDotPulse()
+                statusDot.alpha = 1f
+            }
+        }
+
+        if (state.showTimer) {
+            val formatted = formatDuration(durationSeconds)
+            if (txtTimer?.text != formatted) {
+                txtTimer?.text = formatted
+            }
+            if (txtTimer?.visibility != View.VISIBLE) {
+                txtTimer?.visibility = View.VISIBLE
+            }
+            txtTimer?.setTextColor(0xFF34D399.toInt())
+        } else if (state == BubbleState.ENDED) {
+            if (durationSeconds > 0) {
+                val formatted = formatDuration(durationSeconds)
+                if (txtTimer?.text != formatted) {
+                    txtTimer?.text = formatted
+                }
+                if (txtTimer?.visibility != View.VISIBLE) {
+                    txtTimer?.visibility = View.VISIBLE
+                }
+                txtTimer?.setTextColor(0xFF9CA3AF.toInt())
+            } else {
+                if (txtTimer?.visibility != View.GONE) {
+                    txtTimer?.visibility = View.GONE
+                }
+            }
+        } else {
+            if (txtTimer?.visibility != View.GONE) {
+                txtTimer?.visibility = View.GONE
+            }
+        }
+
+        if (state != BubbleState.ENDED && activeCallCount > 1) {
+            val countText = "$activeCallCount calls"
+            if (badge?.text != countText) {
+                badge?.text = countText
+            }
+            if (badge?.visibility != View.VISIBLE) {
+                badge?.visibility = View.VISIBLE
+            }
+        } else {
+            if (badge?.visibility != View.GONE) {
+                badge?.visibility = View.GONE
+            }
+        }
+
+        val targetEndVisibility = if (state.showEndButton) View.VISIBLE else View.INVISIBLE
+        if (endBtn?.visibility != targetEndVisibility) {
+            endBtn?.visibility = targetEndVisibility
+        }
+        endBtn?.isEnabled = state.showEndButton
+
+        lastAppliedState = state
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     private fun setupTouchAndGestures(
         view: View,
-        params: WindowManager.LayoutParams,
-        screenWidth: Int,
-        screenHeight: Int
+        params: WindowManager.LayoutParams
     ) {
         val quickEndBtn = view.findViewById<View>(R.id.bubble_collapsed_quick_end)
+        val touchSlop = ViewConfiguration.get(view.context).scaledTouchSlop
 
         var initialX = 0
         var initialY = 0
         var initialTouchX = 0f
         var initialTouchY = 0f
         var isMoving = false
-        val touchSlop = 16
 
         view.setOnTouchListener { v, event ->
             val rawX = event.rawX.toInt()
             val rawY = event.rawY.toInt()
 
-            if (quickEndBtn != null) {
+            if (quickEndBtn != null && quickEndBtn.visibility == View.VISIBLE && quickEndBtn.isEnabled) {
                 val quickEndRect = Rect()
                 quickEndBtn.getGlobalVisibleRect(quickEndRect)
-                quickEndRect.inset(-10, -10)
+                quickEndRect.inset(-dp(4f), -dp(4f))
                 if (quickEndRect.contains(rawX, rawY)) {
                     return@setOnTouchListener false
                 }
@@ -565,6 +749,14 @@ object FloatingBubbleManager {
 
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
+                    val b = screenBounds()
+                    if ((params.gravity and Gravity.HORIZONTAL_GRAVITY_MASK) == Gravity.END) {
+                        params.gravity = Gravity.TOP or Gravity.START
+                        params.x = b.right - v.width - edgeMargin
+                        try {
+                            windowManager?.updateViewLayout(v, params)
+                        } catch (_: Exception) {}
+                    }
                     initialX = params.x
                     initialY = params.y
                     initialTouchX = event.rawX
@@ -578,14 +770,19 @@ object FloatingBubbleManager {
                     if (abs(dx) > touchSlop || abs(dy) > touchSlop) {
                         if (!isMoving) {
                             isMoving = true
-                            v.animate().scaleX(1.03f).scaleY(1.03f).setDuration(100).start()
+                            chipView?.animateSafe(
+                                100,
+                                android.view.animation.DecelerateInterpolator(),
+                                { scaleX(1.04f).scaleY(1.04f) }
+                            )
                         }
                     }
                     if (isMoving) {
-                        val currentW = if (v.width > 0) v.width else 200
-                        val currentH = if (v.height > 0) v.height else 60
-                        params.x = (initialX + dx).coerceIn(0, (screenWidth - currentW).coerceAtLeast(0))
-                        params.y = (initialY + dy).coerceIn(30, (screenHeight - currentH - 50).coerceAtLeast(30))
+                        val b = screenBounds()
+                        val currentW = if (v.width > 0) v.width else dp(220f)
+                        val currentH = if (v.height > 0) v.height else dp(64f)
+                        params.x = (initialX + dx).coerceIn(b.left, (b.right - currentW).coerceAtLeast(b.left))
+                        params.y = (initialY + dy).coerceIn(b.top, (b.bottom - currentH).coerceAtLeast(b.top))
                         try {
                             windowManager?.updateViewLayout(v, params)
                         } catch (e: Exception) {
@@ -599,46 +796,80 @@ object FloatingBubbleManager {
                         if (isDismissing) {
                             return@setOnTouchListener true
                         }
-                        // Tapped bubble -> Tactile spring response + launch CallActivity smoothly
                         Log.i("$TAG Bubble tapped -> launching real CallActivity as floating overlay window")
-                        v.pivotX = v.width / 2f
-                        v.pivotY = v.height / 2f
-                        v.animate()
-                            .scaleX(0.92f)
-                            .scaleY(0.92f)
-                            .setDuration(70)
-                            .withEndAction {
-                                v.animate()
-                                    .scaleX(1.0f)
-                                    .scaleY(1.0f)
-                                    .setDuration(90)
-                                    .start()
-                                onBubbleTapped(v.context)
+                        val chip = chipView ?: return@setOnTouchListener true
+                        chip.animateSafe(
+                            70,
+                            android.view.animation.DecelerateInterpolator(),
+                            { scaleX(0.92f).scaleY(0.92f) },
+                            {
+                                chip.animateSafe(
+                                    90,
+                                    android.view.animation.DecelerateInterpolator(),
+                                    { scaleX(1.0f).scaleY(1.0f) },
+                                    { onBubbleTapped(v.context) }
+                                )
                             }
-                            .start()
+                        )
                     } else {
-                        // Drag released -> restore scale + Snap to left or right screen edge
-                        v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(120).start()
-                        val currentW = if (v.width > 0) v.width else 200
-                        val midPoint = screenWidth / 2
-                        params.x = if (params.x + currentW / 2 < midPoint) {
-                            16
-                        } else {
-                            (screenWidth - currentW - 16).coerceAtLeast(16)
+                        // Drag released -> Glide to nearest screen edge
+                        val b = screenBounds()
+                        val currentW = if (v.width > 0) v.width else dp(220f)
+                        val isRight = (params.x + currentW / 2) > b.centerX()
+                        dockedRight = isRight
+                        lastDockedY = params.y
+
+                        val targetX = if (isRight) (b.right - currentW - edgeMargin) else (b.left + edgeMargin)
+                        val startX = params.x
+
+                        val anim = ValueAnimator.ofInt(startX, targetX)
+                        anim.duration = 220
+                        anim.interpolator = android.view.animation.OvershootInterpolator(0.8f)
+                        anim.addUpdateListener { va ->
+                            if (v.isAttachedToWindow) {
+                                params.x = va.animatedValue as Int
+                                try {
+                                    windowManager?.updateViewLayout(v, params)
+                                } catch (_: Exception) {}
+                            }
                         }
-                        try {
-                            windowManager?.updateViewLayout(v, params)
-                        } catch (e: Exception) {
-                            Log.e("$TAG Error updating layout on snap: $e")
-                        }
+                        anim.addListener(object : AnimatorListenerAdapter() {
+                            private var cancelled = false
+
+                            override fun onAnimationCancel(a: Animator) {
+                                cancelled = true
+                            }
+
+                            override fun onAnimationEnd(a: Animator) {
+                                if (!cancelled && v.isAttachedToWindow) {
+                                    params.gravity = if (isRight) (Gravity.TOP or Gravity.END) else (Gravity.TOP or Gravity.START)
+                                    params.x = edgeMargin
+                                    try {
+                                        windowManager?.updateViewLayout(v, params)
+                                    } catch (_: Exception) {}
+                                }
+                            }
+                        })
+                        anim.start()
+
+                        chipView?.animateSafe(
+                            120,
+                            android.view.animation.DecelerateInterpolator(),
+                            { scaleX(1.0f).scaleY(1.0f) }
+                        )
+                        v.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
                     }
                     true
                 }
                 MotionEvent.ACTION_CANCEL -> {
                     if (isMoving) {
-                        v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(120).start()
+                        chipView?.animateSafe(
+                            120,
+                            android.view.animation.DecelerateInterpolator(),
+                            { scaleX(1.0f).scaleY(1.0f) }
+                        )
                     }
-                    false
+                    true
                 }
                 else -> false
             }
@@ -647,19 +878,39 @@ object FloatingBubbleManager {
 
     private fun setupClickListeners(view: View) {
         val endBtn = view.findViewById<View>(R.id.bubble_collapsed_quick_end)
+        val endCircle = view.findViewById<View>(R.id.bubble_collapsed_quick_end_circle) ?: endBtn
+
         endBtn?.setOnClickListener {
             Log.i("$TAG [End] button clicked on bubble -> terminating call")
-            endBtn.animate().scaleX(0.85f).scaleY(0.85f).setDuration(60).withEndAction {
-                endBtn.animate().scaleX(1.0f).scaleY(1.0f).setDuration(80).start()
-                terminateCurrentCall()
-            }.start()
+            endCircle?.animateSafe(
+                60,
+                android.view.animation.DecelerateInterpolator(),
+                { scaleX(0.85f).scaleY(0.85f) },
+                {
+                    endCircle.animateSafe(
+                        80,
+                        android.view.animation.DecelerateInterpolator(),
+                        { scaleX(1.0f).scaleY(1.0f) }
+                    )
+                }
+            )
+            terminateCurrentCall()
         }
         endBtn?.setOnLongClickListener {
             Log.i("$TAG [End] button long-clicked on bubble -> terminating ALL calls immediately")
-            endBtn.animate().scaleX(0.8f).scaleY(0.8f).setDuration(80).withEndAction {
-                endBtn.animate().scaleX(1.0f).scaleY(1.0f).setDuration(80).start()
-                terminateAllCalls()
-            }.start()
+            endCircle?.animateSafe(
+                80,
+                android.view.animation.DecelerateInterpolator(),
+                { scaleX(0.8f).scaleY(0.8f) },
+                {
+                    endCircle.animateSafe(
+                        80,
+                        android.view.animation.DecelerateInterpolator(),
+                        { scaleX(1.0f).scaleY(1.0f) }
+                    )
+                }
+            )
+            terminateAllCalls()
             true
         }
     }
@@ -711,7 +962,7 @@ object FloatingBubbleManager {
             }
             if (activeCalls.isEmpty()) {
                 mainHandler.post {
-                    if (!isDismissing) showCallEndedAndDismiss()
+                    if (!isDismissing) onAllCallsEnded()
                 }
                 return@postOnCoreThread
             }
@@ -719,26 +970,19 @@ object FloatingBubbleManager {
             val currentCall = core.currentCall?.takeIf {
                 it !in terminatingCalls && !LinphoneUtils.isCallEnding(it.state, considerReleasedAsEnding = true)
             } ?: activeCalls.firstOrNull() ?: return@postOnCoreThread
-            val duration = currentCall.duration
-            val mins = duration / 60
-            val secs = duration % 60
-            val durationFormatted = String.format("%02d:%02d", mins, secs)
 
-            val state = when (currentCall.state) {
-                Call.State.Connected, Call.State.StreamsRunning -> BubbleState.CONNECTED
-                Call.State.Paused, Call.State.PausedByRemote, Call.State.Pausing -> BubbleState.HOLD
-                Call.State.OutgoingRinging, Call.State.OutgoingEarlyMedia -> BubbleState.RINGING
-                Call.State.OutgoingInit, Call.State.OutgoingProgress -> BubbleState.CALLING
-                else -> BubbleState.CONNECTED
-            }
+            val duration = currentCall.duration
+            lastDurationSeconds = duration
+            val state = stateOf(currentCall)
+            val formatted = formatDuration(duration)
 
             mainHandler.post {
                 if (isDismissing) return@post
-                val view = bubbleRootView ?: return@post
-                val txtTimer = view.findViewById<TextView>(R.id.bubble_collapsed_timer)
+                val root = bubbleRootView ?: return@post
+                val txtTimer = root.findViewById<TextView>(R.id.bubble_collapsed_timer)
                 if (state.showTimer) {
-                    if (txtTimer?.text != durationFormatted) {
-                        txtTimer?.text = durationFormatted
+                    if (txtTimer?.text != formatted) {
+                        txtTimer?.text = formatted
                     }
                     if (txtTimer?.visibility != View.VISIBLE) {
                         txtTimer?.visibility = View.VISIBLE
@@ -762,9 +1006,9 @@ object FloatingBubbleManager {
             }
 
             if (activeCalls.isEmpty()) {
-                Log.i("$TAG No active calls remaining in updateUI, dismissing bubble")
+                Log.i("$TAG No active calls remaining in updateUI, ending bubble")
                 mainHandler.post {
-                    if (!isDismissing) showCallEndedAndDismiss()
+                    if (!isDismissing) onAllCallsEnded()
                 }
                 return@postOnCoreThread
             }
@@ -772,6 +1016,7 @@ object FloatingBubbleManager {
             val currentCall = core.currentCall?.takeIf {
                 it !in terminatingCalls && !LinphoneUtils.isCallEnding(it.state, considerReleasedAsEnding = true)
             } ?: activeCalls.firstOrNull() ?: return@postOnCoreThread
+
             val remoteAddress = runCatching { currentCall.callLog?.remoteAddress ?: currentCall.remoteAddress }.getOrNull()
             val displayName = (
                 remoteAddress?.username?.takeIf { it.isNotEmpty() }
@@ -781,19 +1026,30 @@ object FloatingBubbleManager {
             lastKnownDisplayName = displayName
 
             val duration = currentCall.duration
-            val state = when (currentCall.state) {
-                Call.State.Connected, Call.State.StreamsRunning -> BubbleState.CONNECTED
-                Call.State.Paused, Call.State.PausedByRemote, Call.State.Pausing -> BubbleState.HOLD
-                Call.State.OutgoingRinging, Call.State.OutgoingEarlyMedia -> BubbleState.RINGING
-                Call.State.OutgoingInit, Call.State.OutgoingProgress -> BubbleState.CALLING
-                else -> BubbleState.CONNECTED
-            }
+            lastDurationSeconds = duration
+            val state = stateOf(currentCall)
 
             mainHandler.post {
                 if (isDismissing) return@post
-                val view = bubbleRootView ?: return@post
+                val root = bubbleRootView ?: return@post
+
+                // Ensure bubble remains on-screen across rotations
+                val lp = layoutParams
+                if (lp != null && root.isAttachedToWindow) {
+                    val b = screenBounds()
+                    val maxH = if (root.height > 0) root.height else dp(64f)
+                    val clampedY = lp.y.coerceIn(b.top, (b.bottom - maxH).coerceAtLeast(b.top))
+                    if (clampedY != lp.y) {
+                        lp.y = clampedY
+                        lastDockedY = clampedY
+                        try {
+                            windowManager?.updateViewLayout(root, lp)
+                        } catch (_: Exception) {}
+                    }
+                }
+
                 applyBubbleState(
-                    view = view,
+                    view = root,
                     state = state,
                     displayName = displayName,
                     durationSeconds = duration,
@@ -821,7 +1077,7 @@ object FloatingBubbleManager {
             core.terminateAllCalls()
             terminatingCalls.clear()
             mainHandler.post {
-                showCallEndedAndDismiss()
+                onAllCallsEnded()
             }
         }
     }
@@ -842,7 +1098,6 @@ object FloatingBubbleManager {
                 terminatingCalls.add(call)
                 coreContext.terminateCall(call)
 
-                // Terminate any duplicate legs to the exact same username/number
                 val targetNumber = call.remoteAddress.username
                 if (!targetNumber.isNullOrEmpty()) {
                     val duplicateLegs = activeCalls.filter {
@@ -864,7 +1119,7 @@ object FloatingBubbleManager {
                         } else {
                             c.terminate()
                         }
-                    } catch (e: Exception) {}
+                    } catch (_: Exception) {}
                 }
                 core.terminateAllCalls()
             }
@@ -874,7 +1129,7 @@ object FloatingBubbleManager {
             }
 
             if (remainingCalls.isEmpty()) {
-                Log.i("$TAG No remaining active calls, terminating all core calls and dismissing bubble")
+                Log.i("$TAG No remaining active calls, terminating all core calls and ending bubble")
                 org.linphone.ui.call.CallHandlerActivity.cancelAllPendingCalls()
                 for (c in core.calls) {
                     try {
@@ -883,12 +1138,12 @@ object FloatingBubbleManager {
                         } else {
                             c.terminate()
                         }
-                    } catch (e: Exception) {}
+                    } catch (_: Exception) {}
                 }
                 core.terminateAllCalls()
                 terminatingCalls.clear()
                 mainHandler.post {
-                    showCallEndedAndDismiss()
+                    onAllCallsEnded()
                 }
             } else {
                 val nextCall = remainingCalls.first()
@@ -900,8 +1155,8 @@ object FloatingBubbleManager {
                     nextCall.resume()
                 }
                 mainHandler.post {
-                    cancelPendingDismiss()
-                    if (isShowing && bubbleRootView != null) {
+                    reviveIfEnding()
+                    if (isShowing && bubbleRootView != null && !isCallActivityVisible) {
                         bubbleRootView?.visibility = View.VISIBLE
                         updateUI()
                     }
@@ -923,55 +1178,5 @@ object FloatingBubbleManager {
     private fun stopDurationTicker() {
         tickerJob?.cancel()
         tickerJob = null
-    }
-
-    private fun showCallEndedAndDismiss() {
-        if (isDismissing) return
-        isDismissing = true
-        cancelPendingDismiss()
-        isDismissing = true
-        stopDurationTicker()
-        org.linphone.ui.call.CallHandlerActivity.cancelAllPendingCalls()
-        coreContext.postOnCoreThread { core ->
-            for (call in core.calls) {
-                try {
-                    if (call.dir == Call.Dir.Incoming && LinphoneUtils.isCallIncoming(call.state)) {
-                        call.decline(Reason.Declined)
-                    } else {
-                        call.terminate()
-                    }
-                } catch (e: Exception) {}
-            }
-            core.terminateAllCalls()
-            terminatingCalls.clear()
-        }
-        val view = bubbleRootView
-        if (view != null && isShowing) {
-            applyBubbleState(
-                view = view,
-                state = BubbleState.ENDED,
-                displayName = lastKnownDisplayName,
-                durationSeconds = 0,
-                activeCallCount = 0
-            )
-
-            val runnable = Runnable {
-                view.animate()
-                    .alpha(0f)
-                    .scaleX(0.8f)
-                    .scaleY(0.8f)
-                    .setDuration(220)
-                    .withLayer()
-                    .withEndAction {
-                        dismiss()
-                        dismissRunnable = null
-                    }
-                    .start()
-            }
-            dismissRunnable = runnable
-            mainHandler.postDelayed(runnable, 1250)
-        } else {
-            dismiss()
-        }
     }
 }

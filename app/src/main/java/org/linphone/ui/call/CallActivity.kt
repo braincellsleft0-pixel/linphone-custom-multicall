@@ -692,6 +692,7 @@ class CallActivity : GenericActivity() {
     fun minimizeFloatingWindow() {
         if (isFinishing || isDestroyed) return
         if (org.linphone.ui.call.bubble.FloatingBubbleManager.canDrawOverlays(this)) {
+            org.linphone.ui.call.bubble.FloatingBubbleManager.revealForMinimize()
             binding.floatingCardContainer.animate()
                 .alpha(0f)
                 .scaleX(0.75f)

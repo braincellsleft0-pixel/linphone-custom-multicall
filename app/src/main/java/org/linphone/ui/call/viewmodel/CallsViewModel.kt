@@ -243,7 +243,7 @@ class CallsViewModel
                     org.linphone.ui.call.CallHandlerActivity.cancelAllPendingCalls()
                     noCallFoundEvent.postValue(Event(true))
                     coreContext.postOnMainThread {
-                        org.linphone.ui.call.bubble.FloatingBubbleManager.dismiss()
+                        org.linphone.ui.call.bubble.FloatingBubbleManager.onAllCallsEnded()
                     }
                 } else if (wasFocused) {
                     val newCurrentCall = remainingCalls.first()
