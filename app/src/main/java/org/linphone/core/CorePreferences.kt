@@ -155,6 +155,14 @@ class CorePreferences
             config.setBool("app", "route_audio_to_speaker_when_video_enabled", value)
         }
 
+    // True once the user explicitly chose the loudspeaker in a call; stays true for next calls until user chooses earpiece
+    @get:AnyThread @set:WorkerThread
+    var keepSpeakerOn: Boolean
+        get() = config.getBool("app", "keep_speaker_on_for_calls", false)
+        set(value) {
+            config.setBool("app", "keep_speaker_on_for_calls", value)
+        }
+
     @get:AnyThread @set:WorkerThread
     var callRecordingUseSmffFormat: Boolean
         get() = config.getBool("app", "use_smff_for_call_recording", false)

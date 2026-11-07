@@ -385,6 +385,7 @@ class CoreContext
                         Log.i("$TAG Trying to route audio to either bluetooth, hearing aid, headphones or headset if available")
                         AudioUtils.routeAudioToAnyConnectedAudioDeviceOtherThanEarpieceAndSpeaker(call)
                     }
+                    AudioUtils.applyStickySpeakerIfNeeded(call)
                 }
                 Call.State.Connected -> {
                     postOnMainThread {
@@ -410,8 +411,10 @@ class CoreContext
                         Log.i("$TAG Call is connected, trying to route audio to either bluetooth, hearing aid, headphones or headset if available")
                         AudioUtils.routeAudioToAnyConnectedAudioDeviceOtherThanEarpieceAndSpeaker(call)
                     }
+                    AudioUtils.applyStickySpeakerIfNeeded(call)
                 }
                 Call.State.StreamsRunning -> {
+                    AudioUtils.applyStickySpeakerIfNeeded(call)
                     if (previousCallState == Call.State.Connected) {
                         if (corePreferences.automaticallyStartCallRecording && !call.params.isRecording) {
                             if (call.conference == null) { // TODO: FIXME: Conference recordings are currently disabled
@@ -1085,6 +1088,15 @@ class CoreContext
 
         params.recordFile = LinphoneUtils.getRecordingFilePathForAddress(address)
 
+        if (AudioUtils.shouldUseStickySpeaker()) {
+            core.audioDevices.find {
+                it.type == AudioDevice.Type.Speaker && it.hasCapability(AudioDevice.Capabilities.CapabilityPlay)
+            }?.let {
+                Log.i("$TAG Sticky speaker enabled, starting call with output audio device [${it.id}]")
+                params.outputAudioDevice = it
+            }
+        }
+
         if (localAddress != null) {
             val account = core.accountList.find { account ->
                 account.params.identityAddress?.weakEqual(localAddress) == true
@@ -1188,6 +1200,15 @@ class CoreContext
             if (videoBothWays) {
                 Log.i("$TAG Call is being auto-answered, requesting video in both ways according to user setting")
                 params.videoDirection = MediaDirection.SendRecv
+            }
+        }
+
+        if (AudioUtils.shouldUseStickySpeaker()) {
+            core.audioDevices.find {
+                it.type == AudioDevice.Type.Speaker && it.hasCapability(AudioDevice.Capabilities.CapabilityPlay)
+            }?.let {
+                Log.i("$TAG Sticky speaker enabled, answering call with output audio device [${it.id}]")
+                params.outputAudioDevice = it
             }
         }
 

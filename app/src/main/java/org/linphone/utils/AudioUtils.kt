@@ -27,6 +27,7 @@ import androidx.media.AudioAttributesCompat
 import androidx.media.AudioFocusRequestCompat
 import androidx.media.AudioManagerCompat
 import org.linphone.LinphoneApplication.Companion.coreContext
+import org.linphone.LinphoneApplication.Companion.corePreferences
 import org.linphone.core.AudioDevice
 import org.linphone.core.Call
 import org.linphone.core.tools.Log
@@ -34,6 +35,43 @@ import org.linphone.core.tools.Log
 class AudioUtils {
     companion object {
         private const val TAG = "[Audio Utils]"
+
+        /** User explicitly picked speaker (true) or earpiece (false). Call ONLY from user-initiated actions. */
+        @WorkerThread
+        fun rememberUserSpeakerChoice(speaker: Boolean) {
+            if (corePreferences.keepSpeakerOn != speaker) {
+                Log.i("$TAG User explicitly chose [${if (speaker) "speaker" else "earpiece"}], remembering it for next calls")
+                corePreferences.keepSpeakerOn = speaker
+            }
+        }
+
+        /** True if a bluetooth / headset / headphones / hearing aid device is currently available for playback. */
+        @WorkerThread
+        fun isExternalAudioDeviceAvailable(): Boolean {
+            return coreContext.core.audioDevices.any {
+                it.hasCapability(AudioDevice.Capabilities.CapabilityPlay) && (
+                    it.type == AudioDevice.Type.Bluetooth ||
+                        it.type == AudioDevice.Type.HearingAid ||
+                        it.type == AudioDevice.Type.Headset ||
+                        it.type == AudioDevice.Type.Headphones
+                    )
+            }
+        }
+
+        /** Should a new/ongoing call be (re)routed to speaker because the user asked for it earlier? */
+        @WorkerThread
+        fun shouldUseStickySpeaker(): Boolean {
+            return corePreferences.keepSpeakerOn && !isExternalAudioDeviceAvailable()
+        }
+
+        /** Re-apply the sticky speaker on this call if needed (no-op when already on speaker). */
+        @WorkerThread
+        fun applyStickySpeakerIfNeeded(call: Call) {
+            if (!shouldUseStickySpeaker()) return
+            if (call.outputAudioDevice?.type == AudioDevice.Type.Speaker) return
+            Log.i("$TAG Sticky speaker enabled, routing call [${call.remoteAddress.asStringUriOnly()}] to speaker")
+            routeAudioToSpeaker(call)
+        }
 
         @WorkerThread
         fun routeAudioToEarpiece(call: Call? = null) {

@@ -845,6 +845,11 @@ class CurrentCallViewModel
                     // onSelected
                     coreContext.postOnCoreThread {
                         Log.i("$TAG Selected audio device with ID [${device.id}]")
+                        if (device.type == AudioDevice.Type.Speaker) {
+                            AudioUtils.rememberUserSpeakerChoice(true)
+                        } else if (device.type == AudioDevice.Type.Earpiece) {
+                            AudioUtils.rememberUserSpeakerChoice(false)
+                        }
                         val callNow = currentCall ?: CallsViewModel.focusedCall ?: core.currentCall ?: core.calls.firstOrNull()
                         when (device.type) {
                             AudioDevice.Type.Headset, AudioDevice.Type.Headphones -> AudioUtils.routeAudioToHeadset(callNow)
@@ -873,6 +878,7 @@ class CurrentCallViewModel
                 Log.i(
                     "$TAG Switching between earpiece & speaker at any time: routeAudioToSpeaker=$routeAudioToSpeaker"
                 )
+                AudioUtils.rememberUserSpeakerChoice(routeAudioToSpeaker)
                 if (routeAudioToSpeaker) {
                     AudioUtils.routeAudioToSpeaker(call)
                     core.calls.forEach { c -> AudioUtils.routeAudioToSpeaker(c) }

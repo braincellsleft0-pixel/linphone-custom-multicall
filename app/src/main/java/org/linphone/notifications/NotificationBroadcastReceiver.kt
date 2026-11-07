@@ -92,9 +92,11 @@ class NotificationBroadcastReceiver : BroadcastReceiver() {
                         val isUsingSpeaker = audioDevice?.type == AudioDevice.Type.Speaker
                         if (isUsingSpeaker) {
                             Log.i("$TAG Routing audio to earpiece for call [$remoteSipUri]")
+                            AudioUtils.rememberUserSpeakerChoice(false)
                             AudioUtils.routeAudioToEarpiece(call)
                         } else {
                             Log.i("$TAG Routing audio to speaker for call [$remoteSipUri]")
+                            AudioUtils.rememberUserSpeakerChoice(true)
                             AudioUtils.routeAudioToSpeaker(call)
                         }
                         core.calls.forEach { activeCall ->
