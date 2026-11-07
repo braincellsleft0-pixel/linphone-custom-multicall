@@ -182,6 +182,8 @@
 
         <activity
             android:name=".ui.call.CallActivity"
+            android:taskAffinity="org.linphone.calloverlay"
+            android:excludeFromRecents="true"
             android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.LinphoneInCall"
             android:launchMode="singleTask"

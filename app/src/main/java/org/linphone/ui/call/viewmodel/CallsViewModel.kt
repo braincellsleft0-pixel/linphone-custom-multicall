@@ -171,17 +171,23 @@ class CallsViewModel
                 }
             } else {
 
-                if (state == Call.State.Released || state == Call.State.Error) {
+                if (state == Call.State.End || state == Call.State.Released || state == Call.State.Error) {
                     Log.i(
-                        "$TAG Call [${call.remoteAddress?.asStringUriOnly()}] released, removing from list after delay"
+                        "$TAG Call [${call.remoteAddress?.asStringUriOnly()}] ended/released, removing from list after delay"
                     )
                     viewModelScope.launch {
-                        delay(600)
+                        delay(400)
                         coreContext.postOnCoreThread {
                             if (found != null && modelsList.remove(found)) {
                                 found.destroy()
                                 updateCallsSelection()
                                 scheduleListRefresh()
+                                if (modelsList.isEmpty() || core.calls.none {
+                                    !LinphoneUtils.isCallEnding(it.state, considerReleasedAsEnding = true)
+                                }
+                                ) {
+                                    noCallFoundEvent.postValue(Event(true))
+                                }
                             }
                         }
                     }
@@ -278,8 +284,9 @@ class CallsViewModel
 
             modelsList.clear()
             if (core.callsNb > 0) {
-                val currentCall = core.currentCall ?: core.calls.first()
-                for (call in core.calls) {
+                val activeCalls = core.calls.filter { !LinphoneUtils.isCallEnding(it.state, considerReleasedAsEnding = true) }
+                val currentCall = core.currentCall ?: activeCalls.firstOrNull() ?: core.calls.first()
+                for (call in activeCalls) {
                     val model = CallModel(call, isCur = (call == currentCall))
                     modelsList.add(model)
                 }

@@ -318,5 +318,24 @@ class CallModel
                 Log.e("$TAG Error terminating call [$id]: ${e.message}")
             }
         }
+
+        // Safety net: if call is still active after 2.5s, retry termination
+        coreContext.postOnCoreThreadDelayed({
+            if (!LinphoneUtils.isCallEnding(call.state, considerReleasedAsEnding = true)) {
+                Log.w("$TAG Call [$id] still in state [${call.state}] after 2.5s, retrying terminateCall")
+                try {
+                    coreContext.terminateCall(call)
+                } catch (e: Throwable) {}
+
+                // If after another 1.5s still alive, reconcile row so user is not stuck
+                coreContext.postOnCoreThreadDelayed({
+                    if (!LinphoneUtils.isCallEnding(call.state, considerReleasedAsEnding = true)) {
+                        Log.e("$TAG Call [$id] termination timed out, restoring row to state [${call.state}]")
+                        hangUpRequested = false
+                        updateStatus(isCurrent.value == true)
+                    }
+                }, 1500)
+            }
+        }, 2500)
     }
 }
