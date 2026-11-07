@@ -83,7 +83,7 @@ class OutgoingCallFragment : GenericCallFragment() {
         val callsAdapter = CallsListAdapter()
         binding.inCallCallsList?.apply {
             setHasFixedSize(true)
-            setItemViewCacheSize(25)
+            setItemViewCacheSize(6)
             itemAnimator = null
             layoutManager = LinearLayoutManager(requireContext())
             adapter = callsAdapter

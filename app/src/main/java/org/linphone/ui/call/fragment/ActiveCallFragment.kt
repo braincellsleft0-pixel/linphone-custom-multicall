@@ -171,7 +171,7 @@ class ActiveCallFragment : GenericCallFragment() {
         val inCallCallsAdapter = CallsListAdapter()
         binding.inCallCallsList?.apply {
             setHasFixedSize(true)
-            setItemViewCacheSize(25)
+            setItemViewCacheSize(6)
             itemAnimator = null
             layoutManager = LinearLayoutManager(requireContext())
             adapter = inCallCallsAdapter
@@ -201,6 +201,19 @@ class ActiveCallFragment : GenericCallFragment() {
         val callStatsBottomSheetBehavior = BottomSheetBehavior.from(binding.callStats.root)
         callStatsBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
         callStatsBottomSheetBehavior.skipCollapsed = true
+        callStatsBottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                val isVisible = (newState == BottomSheetBehavior.STATE_EXPANDED)
+                callViewModel.isStatsSheetVisible = isVisible
+                if (isVisible) {
+                    callViewModel.currentCall?.let { call ->
+                        callViewModel.callStatsModel.update(call, call.audioStats)
+                    }
+                }
+            }
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {}
+        })
 
         val callMediaEncryptionStatsBottomSheetBehavior = BottomSheetBehavior.from(
             binding.callMediaEncryptionStats.root

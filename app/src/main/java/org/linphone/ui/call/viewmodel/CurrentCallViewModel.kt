@@ -30,6 +30,7 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
@@ -143,6 +144,10 @@ class CurrentCallViewModel
     val isMediaEncrypted = MutableLiveData<Boolean>()
 
     val hideVideo = MutableLiveData<Boolean>()
+
+    var isStatsSheetVisible = false
+
+    private var vuMeterJob: Job? = null
 
     val callStatsModel = CallStatsModel()
 
@@ -325,7 +330,9 @@ class CurrentCallViewModel
 
         @WorkerThread
         override fun onStatsUpdated(call: Call, stats: CallStats) {
-            callStatsModel.update(call, stats)
+            if (isStatsSheetVisible) {
+                callStatsModel.update(call, stats)
+            }
         }
 
         @WorkerThread
@@ -611,6 +618,8 @@ class CurrentCallViewModel
     @UiThread
     override fun onCleared() {
         super.onCleared()
+        vuMeterJob?.cancel()
+        vuMeterJob = null
 
         coreContext.postOnCoreThread { core ->
             core.removeListener(coreListener)
@@ -1165,8 +1174,10 @@ class CurrentCallViewModel
     fun configureCall(call: Call) {
         val cur = currentCall
         if (cur == call) {
-            Log.i("$TAG Call [${call.remoteAddress.asStringUriOnly()}] is already current, updating stats only")
-            callStatsModel.update(call, call.audioStats)
+            if (isStatsSheetVisible) {
+                Log.i("$TAG Call [${call.remoteAddress.asStringUriOnly()}] is already current, updating stats only")
+                callStatsModel.update(call, call.audioStats)
+            }
             return
         }
         Log.i(
@@ -1177,7 +1188,9 @@ class CurrentCallViewModel
 
         terminatedByUser = false
         currentCall = call
-        callStatsModel.update(call, call.audioStats)
+        if (isStatsSheetVisible) {
+            callStatsModel.update(call, call.audioStats)
+        }
         callMediaEncryptionModel.update(call)
         call.addListener(callListener)
 
@@ -1333,27 +1346,38 @@ class CurrentCallViewModel
 
         callDuration.postValue(call.duration)
 
-        val chatRoom = lookupCurrentCallConversation(call)
-        currentCallConversation = chatRoom
-        if (chatRoom != null) {
-            val unreadCount = chatRoom.unreadMessagesCount
-            Log.i(
-                "$TAG Found existing 1-1 conversation for current call, currently [$unreadCount] unread messages in existing conversation"
-            )
-            unreadMessagesCount.postValue(unreadCount)
-        } else {
-            Log.i("$TAG Failed to find an existing 1-1 conversation for current call")
+        // Offload database chatroom search from the UI startup critical path
+        viewModelScope.launch(Dispatchers.IO) {
+            val chatRoom = lookupCurrentCallConversation(call)
+            currentCallConversation = chatRoom
+            if (chatRoom != null) {
+                val unreadCount = chatRoom.unreadMessagesCount
+                Log.i(
+                    "$TAG Found existing 1-1 conversation for current call, currently [$unreadCount] unread messages in existing conversation"
+                )
+                unreadMessagesCount.postValue(unreadCount)
+            } else {
+                Log.i("$TAG Failed to find an existing 1-1 conversation for current call")
+            }
         }
 
+        vuMeterJob?.cancel()
+        vuMeterJob = null
         if (corePreferences.showMicrophoneAndSpeakerVuMeters) {
-            volumeVuMeterTickerFlow().onEach {
+            vuMeterJob = volumeVuMeterTickerFlow().onEach {
                 coreContext.postOnCoreThread {
                     val call = currentCall ?: return@postOnCoreThread
                     val state = call.state
                     if (state == Call.State.End || state == Call.State.Released) return@postOnCoreThread
 
-                    microphoneRecordingVolume.postValue(computeVuMeterValue(call.recordVolume))
-                    playbackVolume.postValue(computeVuMeterValue(call.playVolume))
+                    val mic = computeVuMeterValue(call.recordVolume)
+                    val spk = computeVuMeterValue(call.playVolume)
+                    if (microphoneRecordingVolume.value != mic) {
+                        microphoneRecordingVolume.postValue(mic)
+                    }
+                    if (playbackVolume.value != spk) {
+                        playbackVolume.postValue(spk)
+                    }
                 }
             }.launchIn(viewModelScope)
         }
@@ -1622,7 +1646,7 @@ class CurrentCallViewModel
     private fun volumeVuMeterTickerFlow() = flow {
         while (currentCall != null) {
             emit(Unit)
-            delay(50)
+            delay(150)
         }
     }
 
