@@ -3,98 +3,130 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/bubble_collapsed_root"
     android:layout_width="wrap_content"
-    android:layout_height="42dp"
-    android:background="@drawable/bg_floating_bubble_collapsed"
-    android:elevation="12dp"
+    android:layout_height="48dp"
+    android:background="@drawable/bg_floating_bubble_chip"
+    android:elevation="14dp"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingStart="12dp"
-    android:paddingEnd="5dp"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp"
+    android:animateLayoutChanges="true"
     android:clickable="true"
     android:focusable="true">
 
-    <!-- Phone Call Indicator Icon -->
-    <ImageView
-        android:id="@+id/bubble_collapsed_icon"
-        android:layout_width="15dp"
-        android:layout_height="15dp"
-        android:layout_marginEnd="7dp"
-        android:contentDescription="@null"
-        android:src="@drawable/phone"
-        android:tint="#10B981"
-        app:tint="#10B981" />
-
-    <!-- Number (numberxxxxx) -->
-    <TextView
-        android:id="@+id/bubble_collapsed_caller"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:maxWidth="130dp"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:text="+8801XXXXXXXXX"
-        android:textColor="#FFFFFF"
-        android:textSize="13sp"
-        android:textStyle="bold" />
-
-    <!-- Status / Timer (Calling... or 00:15) -->
-    <TextView
-        android:id="@+id/bubble_collapsed_timer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="6dp"
-        android:text="Calling..."
-        android:textColor="#34D399"
-        android:textSize="11sp"
-        android:textStyle="bold" />
-
-    <!-- Multi-call Count Badge (e.g. "4 Calls") -->
-    <TextView
-        android:id="@+id/bubble_collapsed_count_badge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="5dp"
-        android:background="@drawable/badge_pill_background"
-        android:paddingStart="6dp"
-        android:paddingTop="2dp"
-        android:paddingEnd="6dp"
-        android:paddingBottom="2dp"
-        android:text="2 Calls"
-        android:textColor="#FFFFFF"
-        android:textSize="10sp"
-        android:textStyle="bold"
-        android:visibility="gone" />
-
-    <!-- [End] Red Button -->
-    <LinearLayout
-        android:id="@+id/bubble_collapsed_quick_end"
-        android:layout_width="wrap_content"
+    <!-- Icon Container with Status Dot -->
+    <FrameLayout
+        android:id="@+id/bubble_collapsed_icon_container"
+        android:layout_width="32dp"
         android:layout_height="32dp"
-        android:layout_marginStart="10dp"
-        android:background="@drawable/bg_bubble_red_pill"
-        android:clickable="true"
-        android:focusable="true"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:paddingStart="10dp"
-        android:paddingEnd="10dp">
+        android:background="@drawable/bg_floating_bubble_icon_container">
 
         <ImageView
-            android:layout_width="13dp"
-            android:layout_height="13dp"
-            android:layout_marginEnd="4dp"
+            android:id="@+id/bubble_collapsed_icon"
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:layout_gravity="center"
             android:contentDescription="@null"
-            android:src="@drawable/phone_disconnect"
-            android:tint="#FFFFFF"
+            android:src="@drawable/phone"
             app:tint="#FFFFFF" />
 
+        <!-- Status Dot (Amber/Green/Orange/Red) -->
+        <View
+            android:id="@+id/bubble_collapsed_status_dot"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="1dp"
+            android:layout_marginBottom="1dp"
+            android:background="@drawable/bg_bubble_status_dot" />
+    </FrameLayout>
+
+    <!-- Caller Info (Two lines) -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="6dp"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+
+        <!-- Line 1: Caller Number / Display Name -->
         <TextView
+            android:id="@+id/bubble_collapsed_caller"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="End"
+            android:maxWidth="135dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="+8801XXXXXXXXX"
             android:textColor="#FFFFFF"
-            android:textSize="12sp"
+            android:textSize="12.5sp"
             android:textStyle="bold" />
+
+        <!-- Line 2: Status + Live Timer (Tabular) + Count Badge -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/bubble_collapsed_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Calling..."
+                android:textColor="#FBBF24"
+                android:textSize="10.5sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/bubble_collapsed_timer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:fontFeatureSettings="tnum"
+                android:text=""
+                android:textColor="#34D399"
+                android:textSize="10.5sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/bubble_collapsed_count_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/bg_bubble_count_badge"
+                android:paddingStart="5dp"
+                android:paddingTop="1dp"
+                android:paddingEnd="5dp"
+                android:paddingBottom="1dp"
+                android:text="2 calls"
+                android:textColor="#E2E8F0"
+                android:textSize="9.5sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+        </LinearLayout>
     </LinearLayout>
+
+    <!-- Quick End Button (36dp circular with clean tap target) -->
+    <FrameLayout
+        android:id="@+id/bubble_collapsed_quick_end"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="4dp"
+        android:background="@drawable/bg_bubble_end_circular"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:id="@+id/bubble_collapsed_quick_end_icon"
+            android:layout_width="15dp"
+            android:layout_height="15dp"
+            android:layout_gravity="center"
+            android:contentDescription="@null"
+            android:src="@drawable/phone_disconnect"
+            app:tint="#FFFFFF" />
+    </FrameLayout>
 
 </LinearLayout>

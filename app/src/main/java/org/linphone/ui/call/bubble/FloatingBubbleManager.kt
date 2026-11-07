@@ -79,6 +79,22 @@ object FloatingBubbleManager {
 
     private var currentFallbackNumber: String? = null
 
+    enum class BubbleState(
+        val label: String,
+        val dotColor: Int,
+        val statusColor: Int,
+        val showTimer: Boolean,
+        val showEndButton: Boolean
+    ) {
+        CALLING("Calling...", 0xFFF59E0B.toInt(), 0xFFFBBF24.toInt(), false, true),
+        RINGING("Ringing...", 0xFFF59E0B.toInt(), 0xFFFBBF24.toInt(), false, true),
+        CONNECTED("Connected", 0xFF10B981.toInt(), 0xFF34D399.toInt(), true, true),
+        HOLD("On Hold", 0xFFF97316.toInt(), 0xFFFB923C.toInt(), true, true),
+        ENDED("Ended", 0xFFEF4444.toInt(), 0xFF9CA3AF.toInt(), false, false)
+    }
+
+    private var lastKnownDisplayName: String = "Call"
+
     @Volatile
     private var isInitialized = false
 
@@ -93,6 +109,78 @@ object FloatingBubbleManager {
         dismissRunnable?.let {
             mainHandler.removeCallbacks(it)
             dismissRunnable = null
+        }
+        isDismissing = false
+        bubbleRootView?.let { v ->
+            v.animate().cancel()
+            v.alpha = 1f
+            v.scaleX = 1f
+            v.scaleY = 1f
+            v.translationY = 0f
+            val endBtn = v.findViewById<View>(R.id.bubble_collapsed_quick_end)
+            endBtn?.visibility = View.VISIBLE
+        }
+    }
+
+    private fun applyBubbleState(
+        view: View,
+        state: BubbleState,
+        displayName: String?,
+        durationSeconds: Int = 0,
+        activeCallCount: Int = 1
+    ) {
+        val txtCaller = view.findViewById<TextView>(R.id.bubble_collapsed_caller)
+        val txtStatus = view.findViewById<TextView>(R.id.bubble_collapsed_status)
+        val txtTimer = view.findViewById<TextView>(R.id.bubble_collapsed_timer)
+        val badge = view.findViewById<TextView>(R.id.bubble_collapsed_count_badge)
+        val statusDot = view.findViewById<View>(R.id.bubble_collapsed_status_dot)
+        val endBtn = view.findViewById<View>(R.id.bubble_collapsed_quick_end)
+
+        val name = displayName ?: lastKnownDisplayName
+        if (txtCaller?.text != name) {
+            txtCaller?.text = name
+        }
+
+        if (txtStatus?.text != state.label) {
+            txtStatus?.text = state.label
+        }
+        txtStatus?.setTextColor(state.statusColor)
+
+        statusDot?.background?.mutate()?.setTint(state.dotColor)
+
+        if (state.showTimer) {
+            val mins = durationSeconds / 60
+            val secs = durationSeconds % 60
+            val durationFormatted = String.format("%02d:%02d", mins, secs)
+            if (txtTimer?.text != durationFormatted) {
+                txtTimer?.text = durationFormatted
+            }
+            if (txtTimer?.visibility != View.VISIBLE) {
+                txtTimer?.visibility = View.VISIBLE
+            }
+        } else {
+            if (txtTimer?.visibility != View.GONE) {
+                txtTimer?.visibility = View.GONE
+            }
+        }
+
+        if (state != BubbleState.ENDED && activeCallCount > 1) {
+            val countText = "$activeCallCount calls"
+            if (badge?.text != countText) {
+                badge?.text = countText
+            }
+            if (badge?.visibility != View.VISIBLE) {
+                badge?.visibility = View.VISIBLE
+            }
+        } else {
+            if (badge?.visibility != View.GONE) {
+                badge?.visibility = View.GONE
+            }
+        }
+
+        val targetEndVisibility = if (state.showEndButton) View.VISIBLE else View.GONE
+        if (endBtn?.visibility != targetEndVisibility) {
+            endBtn?.visibility = targetEndVisibility
         }
     }
 
@@ -403,6 +491,13 @@ object FloatingBubbleManager {
         if (viewToRemove != null) {
             try {
                 viewToRemove.animate().cancel()
+                if (viewToRemove.alpha <= 0.05f) {
+                    try {
+                        windowManager?.removeView(viewToRemove)
+                    } catch (e: Exception) {}
+                    isDismissing = false
+                    return
+                }
                 val density = coreContext.context.resources.displayMetrics.density
                 viewToRemove.pivotX = if (viewToRemove.width > 0) viewToRemove.width / 2f else (110f * density)
                 viewToRemove.pivotY = if (viewToRemove.height > 0) viewToRemove.height / 2f else (21f * density)
@@ -481,7 +576,10 @@ object FloatingBubbleManager {
                     val dx = (event.rawX - initialTouchX).toInt()
                     val dy = (event.rawY - initialTouchY).toInt()
                     if (abs(dx) > touchSlop || abs(dy) > touchSlop) {
-                        isMoving = true
+                        if (!isMoving) {
+                            isMoving = true
+                            v.animate().scaleX(1.03f).scaleY(1.03f).setDuration(100).start()
+                        }
                     }
                     if (isMoving) {
                         val currentW = if (v.width > 0) v.width else 200
@@ -498,6 +596,9 @@ object FloatingBubbleManager {
                 }
                 MotionEvent.ACTION_UP -> {
                     if (!isMoving) {
+                        if (isDismissing) {
+                            return@setOnTouchListener true
+                        }
                         // Tapped bubble -> Tactile spring response + launch CallActivity smoothly
                         Log.i("$TAG Bubble tapped -> launching real CallActivity as floating overlay window")
                         v.pivotX = v.width / 2f
@@ -516,7 +617,8 @@ object FloatingBubbleManager {
                             }
                             .start()
                     } else {
-                        // Drag released -> Snap to left or right screen edge
+                        // Drag released -> restore scale + Snap to left or right screen edge
+                        v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(120).start()
                         val currentW = if (v.width > 0) v.width else 200
                         val midPoint = screenWidth / 2
                         params.x = if (params.x + currentW / 2 < midPoint) {
@@ -531,6 +633,12 @@ object FloatingBubbleManager {
                         }
                     }
                     true
+                }
+                MotionEvent.ACTION_CANCEL -> {
+                    if (isMoving) {
+                        v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(120).start()
+                    }
+                    false
                 }
                 else -> false
             }
@@ -612,22 +720,33 @@ object FloatingBubbleManager {
                 it !in terminatingCalls && !LinphoneUtils.isCallEnding(it.state, considerReleasedAsEnding = true)
             } ?: activeCalls.firstOrNull() ?: return@postOnCoreThread
             val duration = currentCall.duration
-            val durationFormatted = String.format("%02d:%02d", duration / 60, duration % 60)
+            val mins = duration / 60
+            val secs = duration % 60
+            val durationFormatted = String.format("%02d:%02d", mins, secs)
 
-            val statusText = when (currentCall.state) {
-                Call.State.Connected, Call.State.StreamsRunning -> durationFormatted
-                Call.State.Paused, Call.State.PausedByRemote, Call.State.Pausing -> "Hold ($durationFormatted)"
-                Call.State.OutgoingInit, Call.State.OutgoingProgress -> "Calling..."
-                Call.State.OutgoingRinging, Call.State.OutgoingEarlyMedia -> "Ringing..."
-                else -> "In Call"
+            val state = when (currentCall.state) {
+                Call.State.Connected, Call.State.StreamsRunning -> BubbleState.CONNECTED
+                Call.State.Paused, Call.State.PausedByRemote, Call.State.Pausing -> BubbleState.HOLD
+                Call.State.OutgoingRinging, Call.State.OutgoingEarlyMedia -> BubbleState.RINGING
+                Call.State.OutgoingInit, Call.State.OutgoingProgress -> BubbleState.CALLING
+                else -> BubbleState.CONNECTED
             }
 
             mainHandler.post {
                 if (isDismissing) return@post
                 val view = bubbleRootView ?: return@post
-                val txtCollapsedTimer = view.findViewById<TextView>(R.id.bubble_collapsed_timer)
-                if (txtCollapsedTimer?.text != statusText) {
-                    txtCollapsedTimer?.text = statusText
+                val txtTimer = view.findViewById<TextView>(R.id.bubble_collapsed_timer)
+                if (state.showTimer) {
+                    if (txtTimer?.text != durationFormatted) {
+                        txtTimer?.text = durationFormatted
+                    }
+                    if (txtTimer?.visibility != View.VISIBLE) {
+                        txtTimer?.visibility = View.VISIBLE
+                    }
+                } else {
+                    if (txtTimer?.visibility != View.GONE) {
+                        txtTimer?.visibility = View.GONE
+                    }
                 }
             }
         }
@@ -659,40 +778,27 @@ object FloatingBubbleManager {
                 ?: LinphoneUtils.getDisplayName(remoteAddress).takeIf { it.isNotEmpty() }
                 ?: currentFallbackNumber ?: "Call"
             )
+            lastKnownDisplayName = displayName
 
             val duration = currentCall.duration
-            val durationFormatted = String.format("%02d:%02d", duration / 60, duration % 60)
-            val statusText = when (currentCall.state) {
-                Call.State.Connected, Call.State.StreamsRunning -> durationFormatted
-                Call.State.Paused, Call.State.PausedByRemote, Call.State.Pausing -> "Hold ($durationFormatted)"
-                Call.State.OutgoingInit, Call.State.OutgoingProgress -> "Calling..."
-                Call.State.OutgoingRinging, Call.State.OutgoingEarlyMedia -> "Ringing..."
-                else -> "In Call"
+            val state = when (currentCall.state) {
+                Call.State.Connected, Call.State.StreamsRunning -> BubbleState.CONNECTED
+                Call.State.Paused, Call.State.PausedByRemote, Call.State.Pausing -> BubbleState.HOLD
+                Call.State.OutgoingRinging, Call.State.OutgoingEarlyMedia -> BubbleState.RINGING
+                Call.State.OutgoingInit, Call.State.OutgoingProgress -> BubbleState.CALLING
+                else -> BubbleState.CONNECTED
             }
-            val countText = if (activeCalls.size > 1) "${activeCalls.size} Calls" else null
 
             mainHandler.post {
                 if (isDismissing) return@post
                 val view = bubbleRootView ?: return@post
-                val txtCollapsedCaller = view.findViewById<TextView>(R.id.bubble_collapsed_caller)
-                val txtTimer = view.findViewById<TextView>(R.id.bubble_collapsed_timer)
-                val txtCollapsedCount = view.findViewById<TextView>(R.id.bubble_collapsed_count_badge)
-
-                if (txtCollapsedCaller?.text != displayName) {
-                    txtCollapsedCaller?.text = displayName
-                }
-                if (txtTimer?.text != statusText) {
-                    txtTimer?.text = statusText
-                }
-
-                if (countText != null) {
-                    if (txtCollapsedCount?.text != countText) {
-                        txtCollapsedCount?.text = countText
-                    }
-                    txtCollapsedCount?.visibility = View.VISIBLE
-                } else {
-                    txtCollapsedCount?.visibility = View.GONE
-                }
+                applyBubbleState(
+                    view = view,
+                    state = state,
+                    displayName = displayName,
+                    durationSeconds = duration,
+                    activeCallCount = activeCalls.size
+                )
             }
         }
     }
@@ -823,6 +929,7 @@ object FloatingBubbleManager {
         if (isDismissing) return
         isDismissing = true
         cancelPendingDismiss()
+        isDismissing = true
         stopDurationTicker()
         org.linphone.ui.call.CallHandlerActivity.cancelAllPendingCalls()
         coreContext.postOnCoreThread { core ->
@@ -840,20 +947,29 @@ object FloatingBubbleManager {
         }
         val view = bubbleRootView
         if (view != null && isShowing) {
-            val txtCaller = view.findViewById<TextView>(R.id.bubble_collapsed_caller)
-            val txtTimer = view.findViewById<TextView>(R.id.bubble_collapsed_timer)
-            val badge = view.findViewById<TextView>(R.id.bubble_collapsed_count_badge)
-
-            txtCaller?.text = "Call Ended"
-            txtTimer?.text = "00:00"
-            badge?.visibility = View.GONE
+            applyBubbleState(
+                view = view,
+                state = BubbleState.ENDED,
+                displayName = lastKnownDisplayName,
+                durationSeconds = 0,
+                activeCallCount = 0
+            )
 
             val runnable = Runnable {
-                dismiss()
-                dismissRunnable = null
+                view.animate()
+                    .alpha(0f)
+                    .scaleX(0.8f)
+                    .scaleY(0.8f)
+                    .setDuration(220)
+                    .withLayer()
+                    .withEndAction {
+                        dismiss()
+                        dismissRunnable = null
+                    }
+                    .start()
             }
             dismissRunnable = runnable
-            mainHandler.postDelayed(runnable, 350)
+            mainHandler.postDelayed(runnable, 1250)
         } else {
             dismiss()
         }
