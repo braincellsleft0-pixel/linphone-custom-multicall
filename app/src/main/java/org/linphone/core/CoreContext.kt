@@ -780,16 +780,9 @@ class CoreContext
         core.videoCodecPriorityPolicy = CodecPriorityPolicy.Auto
         core.mediaResourceMode = MediaResourceMode.Shared
         core.maxCalls = 10
+        // Native ringing is enabled so incoming calls ring through the SDK audio pipeline
+        // (the incoming-call notification channel is intentionally created without a ringtone).
         core.isNativeRingingEnabled = true
-        core.isAudioAdaptiveJittcompEnabled = true
-        core.audioJittcomp = 80
-        core.config.setBool("sound", "native_ringing", true)
-        core.config.setFloat("sound", "playback_gain_db", -2.0f)
-        core.config.setBool("sound", "ec_calibrator_cool_tones", false)
-        core.config.setBool("audio", "android_disable_audio_focus_requests", false)
-        core.config.setBool("audio", "android_monitor_audio_devices", true)
-        core.config.setInt("audio", "jitt_comp", 80)
-        core.config.setBool("audio", "adaptive_jitt_comp_enabled", true)
         Log.i("$TAG Media resource mode set to [${core.mediaResourceMode}], max calls [${core.maxCalls}], native ringing [${core.isNativeRingingEnabled}]")
 
         // Set in the Core the list of directories from which it is allowed to delete a file related to a chat message
