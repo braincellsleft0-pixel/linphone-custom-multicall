@@ -685,14 +685,15 @@ class CurrentCallViewModel
                 coreContext.terminateCall(callToTerminate)
 
                 val targetNumber = callToTerminate.remoteAddress.username
-                if (!targetNumber.isNullOrEmpty()) {
-                    val duplicateLegs = activeCalls.filter {
-                        it != callToTerminate && it.remoteAddress.username == targetNumber
-                    }
-                    for (dup in duplicateLegs) {
-                        Log.i("$TAG Terminating duplicate leg to same number [${dup.remoteAddress.asStringUriOnly()}]")
-                        terminatingCalls.add(dup)
-                        coreContext.terminateCall(dup)
+                for (otherCall in core.calls) {
+                    if (otherCall != callToTerminate && !LinphoneUtils.isCallEnding(otherCall.state, considerReleasedAsEnding = true)) {
+                        val isSameDestination = otherCall.remoteAddress.weakEqual(callToTerminate.remoteAddress) ||
+                            (!targetNumber.isNullOrEmpty() && otherCall.remoteAddress.username == targetNumber)
+                        if (isSameDestination) {
+                            Log.i("$TAG Terminating duplicate leg to same number [${otherCall.remoteAddress.asStringUriOnly()}] in same hangup pass")
+                            terminatingCalls.add(otherCall)
+                            coreContext.terminateCall(otherCall)
+                        }
                     }
                 }
 
@@ -707,6 +708,21 @@ class CurrentCallViewModel
                     finishActivityEvent.postValue(Event(true))
                 } else {
                     val nextCall = remainingCalls.first()
+                    val nextTargetNumber = nextCall.remoteAddress.username
+                    if (!targetNumber.isNullOrEmpty() && nextTargetNumber == targetNumber) {
+                        Log.w("$TAG Remaining call [${nextCall.remoteAddress.asStringUriOnly()}] is duplicate of ended number [$targetNumber], terminating it instead of resuming")
+                        terminatingCalls.add(nextCall)
+                        coreContext.terminateCall(nextCall)
+                        val finalRemaining = core.calls.filter {
+                            it !in terminatingCalls && !LinphoneUtils.isCallEnding(it.state, true)
+                        }
+                        if (finalRemaining.isEmpty()) {
+                            org.linphone.ui.call.CallHandlerActivity.cancelAllPendingCalls()
+                            terminatingCalls.clear()
+                            finishActivityEvent.postValue(Event(true))
+                            return@postOnCoreThread
+                        }
+                    }
                     Log.i("$TAG Immediately advancing to next active call [${nextCall.remoteAddress.asStringUriOnly()}] state [${nextCall.state}]")
                     CallsViewModel.focusedCall = nextCall
                     configureCall(nextCall)
@@ -794,10 +810,11 @@ class CurrentCallViewModel
                 } else {
                     curCall.microphoneMuted = !micMuted
                 }
-                if (micMuted) {
-                    Log.w("$TAG Muting microphone")
+                coreContext.userMutedMic = !micMuted
+                if (!micMuted) {
+                    Log.w("$TAG User MUTED microphone")
                 } else {
-                    Log.i("$TAG Un-muting microphone")
+                    Log.i("$TAG User UN-MUTED microphone")
                 }
                 isMicrophoneMuted.postValue(!micMuted)
             }

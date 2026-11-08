@@ -56,6 +56,7 @@ class TelecomCallControlCallback(
     fun requestSpeakerEndpoint() {
         if (currentEndpointType == CallEndpointCompat.TYPE_SPEAKER) {
             Log.d("$TAG Telecom endpoint is already SPEAKER, skipping request")
+            hasRequestedStickySpeaker = true
             return
         }
         val speakerEndpoint = latestEndpoints.find { it.type == CallEndpointCompat.TYPE_SPEAKER }
@@ -65,8 +66,31 @@ class TelecomCallControlCallback(
                     Log.i("$TAG Requesting Telecom endpoint change to SPEAKER [${speakerEndpoint.name}]")
                     val result = callControl.requestEndpointChange(speakerEndpoint)
                     Log.i("$TAG Telecom requestEndpointChange(SPEAKER) result: $result")
+                    if (result is CallControlResult.Success) {
+                        hasRequestedStickySpeaker = true
+                    } else {
+                        hasRequestedStickySpeaker = false
+                        Log.w("$TAG requestEndpointChange(SPEAKER) non-success: $result, retrying in 500ms")
+                        kotlinx.coroutines.delay(500)
+                        val retry = callControl.requestEndpointChange(speakerEndpoint)
+                        Log.i("$TAG Retry Telecom requestEndpointChange(SPEAKER) result: $retry")
+                        if (retry is CallControlResult.Success) {
+                            hasRequestedStickySpeaker = true
+                        }
+                    }
                 } catch (e: Exception) {
-                    Log.w("$TAG Failed to request Telecom endpoint change to SPEAKER: $e")
+                    hasRequestedStickySpeaker = false
+                    Log.w("$TAG Failed to request Telecom endpoint change to SPEAKER: $e, retrying in 500ms")
+                    kotlinx.coroutines.delay(500)
+                    try {
+                        val retry = callControl.requestEndpointChange(speakerEndpoint)
+                        Log.i("$TAG Retry Telecom requestEndpointChange(SPEAKER) result: $retry")
+                        if (retry is CallControlResult.Success) {
+                            hasRequestedStickySpeaker = true
+                        }
+                    } catch (e2: Exception) {
+                        Log.e("$TAG Retry requestEndpointChange(SPEAKER) failed: $e2")
+                    }
                 }
             }
         } else {
@@ -87,12 +111,50 @@ class TelecomCallControlCallback(
                     Log.i("$TAG Requesting Telecom endpoint change to EARPIECE [${earpieceEndpoint.name}]")
                     val result = callControl.requestEndpointChange(earpieceEndpoint)
                     Log.i("$TAG Telecom requestEndpointChange(EARPIECE) result: $result")
+                    if (result !is CallControlResult.Success) {
+                        Log.w("$TAG requestEndpointChange(EARPIECE) non-success: $result, retrying in 500ms")
+                        kotlinx.coroutines.delay(500)
+                        val retry = callControl.requestEndpointChange(earpieceEndpoint)
+                        Log.i("$TAG Retry Telecom requestEndpointChange(EARPIECE) result: $retry")
+                    }
                 } catch (e: Exception) {
-                    Log.w("$TAG Failed to request Telecom endpoint change to EARPIECE: $e")
+                    Log.w("$TAG Failed to request Telecom endpoint change to EARPIECE: $e, retrying in 500ms")
+                    kotlinx.coroutines.delay(500)
+                    try {
+                        val retry = callControl.requestEndpointChange(earpieceEndpoint)
+                        Log.i("$TAG Retry Telecom requestEndpointChange(EARPIECE) result: $retry")
+                    } catch (e2: Exception) {
+                        Log.e("$TAG Retry requestEndpointChange(EARPIECE) failed: $e2")
+                    }
                 }
             }
         } else {
             Log.w("$TAG No EARPIECE endpoint found in available endpoints list (${latestEndpoints.size} endpoints)")
+        }
+    }
+
+    fun resyncAudioRoute() {
+        coreContext.postOnCoreThread {
+            val linphoneDevice = call.outputAudioDevice
+            val linphoneType = linphoneDevice?.type
+            val targetType = when (linphoneType) {
+                org.linphone.core.AudioDevice.Type.Speaker -> CallEndpointCompat.TYPE_SPEAKER
+                org.linphone.core.AudioDevice.Type.Earpiece -> CallEndpointCompat.TYPE_EARPIECE
+                org.linphone.core.AudioDevice.Type.Bluetooth -> CallEndpointCompat.TYPE_BLUETOOTH
+                org.linphone.core.AudioDevice.Type.Headphones,
+                org.linphone.core.AudioDevice.Type.Headset -> CallEndpointCompat.TYPE_WIRED_HEADSET
+                else -> CallEndpointCompat.TYPE_UNKNOWN
+            }
+            Log.i(
+                "$TAG resyncAudioRoute: Linphone output=[$linphoneType] ([${linphoneDevice?.id}]), Telecom current=[${endpointTypeToString(currentEndpointType)}], target=[${endpointTypeToString(targetType)}]"
+            )
+            if (targetType != CallEndpointCompat.TYPE_UNKNOWN && currentEndpointType != targetType) {
+                when (targetType) {
+                    CallEndpointCompat.TYPE_SPEAKER -> requestSpeakerEndpoint()
+                    CallEndpointCompat.TYPE_EARPIECE -> requestEarpieceEndpoint()
+                    else -> Log.d("$TAG resyncAudioRoute: endpoint type $targetType is managed by system/hardware")
+                }
+            }
         }
     }
 
@@ -109,6 +171,8 @@ class TelecomCallControlCallback(
                         val result = callControl.setActive()
                         if (result is CallControlResult.Error) {
                             Log.e("$TAG Failed to set call control active: $result")
+                        } else {
+                            resyncAudioRoute()
                         }
                     }
                 }
@@ -164,6 +228,16 @@ class TelecomCallControlCallback(
         callControl.currentCallEndpoint.onEach { endpoint ->
             currentEndpointType = endpoint.type
             Log.i("$TAG Current Telecom call endpoint [${endpoint.name}] with type [${endpointTypeToString(endpoint.type)}]")
+            coreContext.postOnCoreThread {
+                val currentLinphoneType = call.outputAudioDevice?.type
+                if (endpoint.type == CallEndpointCompat.TYPE_SPEAKER && currentLinphoneType != org.linphone.core.AudioDevice.Type.Speaker) {
+                    Log.i("$TAG Telecom endpoint changed to SPEAKER, syncing Linphone output to Speaker")
+                    AudioUtils.routeAudioToSpeaker(call)
+                } else if (endpoint.type == CallEndpointCompat.TYPE_EARPIECE && currentLinphoneType != org.linphone.core.AudioDevice.Type.Earpiece) {
+                    Log.i("$TAG Telecom endpoint changed to EARPIECE, syncing Linphone output to Earpiece")
+                    AudioUtils.routeAudioToEarpiece(call)
+                }
+            }
         }.launchIn(scope)
 
         callControl.availableEndpoints.onEach { list ->
@@ -219,6 +293,8 @@ class TelecomCallControlCallback(
             val result = callControl.answer(type)
             if (result is CallControlResult.Error) {
                 Log.e("$TAG Failed to answer call control: $result")
+            } else {
+                resyncAudioRoute()
             }
         }
 

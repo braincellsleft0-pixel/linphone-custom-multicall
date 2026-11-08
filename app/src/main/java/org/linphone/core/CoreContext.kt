@@ -114,6 +114,9 @@ class CoreContext
         MutableLiveData()
     }
 
+    var userMutedMic: Boolean = false
+    private val lastStartCallTimestamp = java.util.concurrent.ConcurrentHashMap<String, Long>()
+
     val showGreenToastEvent: MutableLiveData<Event<Pair<Int, Int>>> by lazy {
         MutableLiveData()
     }
@@ -414,6 +417,18 @@ class CoreContext
                 }
                 Call.State.StreamsRunning -> {
                     if (previousCallState == Call.State.Connected) {
+                        AudioUtils.applyStickySpeakerIfNeeded(call)
+                        call.outputAudioDevice?.let { dev ->
+                            Log.i("$TAG StreamsRunning: re-asserting output audio device [${dev.id}] (${dev.type})")
+                            call.outputAudioDevice = dev
+                        }
+
+                        if (!userMutedMic && call.microphoneMuted) {
+                            Log.w("$TAG StreamsRunning: microphone is muted but user did not mute it, auto-unmuting")
+                            call.microphoneMuted = false
+                            refreshMicrophoneMuteStateEvent.postValue(Event(true))
+                        }
+
                         if (corePreferences.automaticallyStartCallRecording && !call.params.isRecording) {
                             if (call.conference == null) { // TODO: FIXME: Conference recordings are currently disabled
                                 Log.i("$TAG Auto record calls is enabled, starting it now")
@@ -474,6 +489,7 @@ class CoreContext
         @WorkerThread
         override fun onLastCallEnded(core: Core) {
             Log.i("$TAG Last call ended")
+            userMutedMic = false
             AudioUtils.resetSystemAudioRoute()
             val currentCamera = core.videoDevice
             if (currentCamera != "FrontFacingCamera") {
@@ -1062,13 +1078,42 @@ class CoreContext
             return
         }
 
+        val destKey = address.username?.takeIf { it.isNotEmpty() } ?: address.asStringUriOnly()
+        val targetUser = address.username
+        val now = System.currentTimeMillis()
+        val lastTime = lastStartCallTimestamp[destKey] ?: 0L
+        if (now - lastTime < 2000L) {
+            Log.w("$TAG Rapid duplicate startCall invoked for [$destKey] (${now - lastTime}ms ago), aborting duplicate call")
+            return
+        }
+
+        // Check core.calls for an existing non-ending call to the same address/username
+        val existingCall = core.calls.find { c ->
+            !LinphoneUtils.isCallEnding(c.state, considerReleasedAsEnding = true) &&
+            (c.remoteAddress.weakEqual(address) || (!targetUser.isNullOrEmpty() && c.remoteAddress.username == targetUser)) &&
+            (
+                c.state == Call.State.OutgoingInit || c.state == Call.State.OutgoingProgress ||
+                c.state == Call.State.OutgoingRinging || c.state == Call.State.OutgoingEarlyMedia ||
+                c.state == Call.State.Connected || c.state == Call.State.StreamsRunning ||
+                c.state == Call.State.Paused || c.state == Call.State.Pausing || c.state == Call.State.Resuming
+            )
+        }
+        if (existingCall != null) {
+            Log.w("$TAG Call to [${address.asStringUriOnly()}] already exists in state [${existingCall.state}], skipping duplicate invite and NOT pausing existing call")
+            return
+        }
+        lastStartCallTimestamp[destKey] = now
+        userMutedMic = false
+
         core.mediaResourceMode = MediaResourceMode.Shared
         core.maxCalls = 10
 
+        // Only pause active calls if they are to a DIFFERENT number!
         for (c in core.calls) {
-            if (c.state == Call.State.StreamsRunning || c.state == Call.State.Connected) {
+            val isSame = c.remoteAddress.weakEqual(address) || (!targetUser.isNullOrEmpty() && c.remoteAddress.username == targetUser)
+            if (!isSame && (c.state == Call.State.StreamsRunning || c.state == Call.State.Connected)) {
                 Log.w(
-                    "$TAG Found active call [${c.remoteAddress.asStringUriOnly()}], pausing it first"
+                    "$TAG Found active call to different number [${c.remoteAddress.asStringUriOnly()}], pausing it first"
                 )
                 c.pause()
             }

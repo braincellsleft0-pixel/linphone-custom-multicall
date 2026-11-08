@@ -1084,21 +1084,22 @@ object FloatingBubbleManager {
             val call = core.currentCall?.takeIf {
                 it !in terminatingCalls && !LinphoneUtils.isCallEnding(it.state, considerReleasedAsEnding = true)
             } ?: activeCalls.firstOrNull()
+            val targetNumber = call?.remoteAddress?.username
 
             if (call != null) {
                 Log.i("$TAG Terminating active call [${call.remoteAddress.asStringUriOnly()}] from bubble")
                 terminatingCalls.add(call)
                 coreContext.terminateCall(call)
 
-                val targetNumber = call.remoteAddress.username
-                if (!targetNumber.isNullOrEmpty()) {
-                    val duplicateLegs = activeCalls.filter {
-                        it != call && it.remoteAddress.username == targetNumber
-                    }
-                    for (dup in duplicateLegs) {
-                        Log.i("$TAG Terminating duplicate leg to same number [${dup.remoteAddress.asStringUriOnly()}]")
-                        terminatingCalls.add(dup)
-                        coreContext.terminateCall(dup)
+                for (otherCall in core.calls) {
+                    if (otherCall != call && !LinphoneUtils.isCallEnding(otherCall.state, considerReleasedAsEnding = true)) {
+                        val isSameDestination = otherCall.remoteAddress.weakEqual(call.remoteAddress) ||
+                            (!targetNumber.isNullOrEmpty() && otherCall.remoteAddress.username == targetNumber)
+                        if (isSameDestination) {
+                            Log.i("$TAG Terminating duplicate leg to same number [${otherCall.remoteAddress.asStringUriOnly()}] from bubble")
+                            terminatingCalls.add(otherCall)
+                            coreContext.terminateCall(otherCall)
+                        }
                     }
                 }
             } else {
@@ -1139,6 +1140,20 @@ object FloatingBubbleManager {
                 }
             } else {
                 val nextCall = remainingCalls.first()
+                val nextTargetNumber = nextCall.remoteAddress.username
+                if (!targetNumber.isNullOrEmpty() && nextTargetNumber == targetNumber) {
+                    Log.w("$TAG Next remaining call is duplicate of ended number [$targetNumber], terminating it too")
+                    terminatingCalls.add(nextCall)
+                    coreContext.terminateCall(nextCall)
+                    val finalRemaining = core.calls.filter {
+                        it !in terminatingCalls && !LinphoneUtils.isCallEnding(it.state, true)
+                    }
+                    if (finalRemaining.isEmpty()) {
+                        terminatingCalls.clear()
+                        mainHandler.post { onAllCallsEnded() }
+                        return@postOnCoreThread
+                    }
+                }
                 Log.i(
                     "$TAG [${remainingCalls.size}] active call(s) remaining, switching bubble to next call [${nextCall.remoteAddress.asStringUriOnly()}]"
                 )

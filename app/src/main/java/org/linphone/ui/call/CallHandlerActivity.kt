@@ -147,11 +147,16 @@ class CallHandlerActivity : Activity() {
                         // Avoid redundant duplicate outgoing invites to the exact same destination
                         val alreadyConnecting = core.calls.any {
                             !LinphoneUtils.isCallEnding(it.state, considerReleasedAsEnding = true) &&
-                            (it.remoteAddress.weakEqual(address) || it.remoteAddress.username == address.username) &&
-                            (it.state == Call.State.OutgoingInit || it.state == Call.State.OutgoingProgress || it.state == Call.State.OutgoingRinging)
+                            (it.remoteAddress.weakEqual(address) || (!address.username.isNullOrEmpty() && it.remoteAddress.username == address.username)) &&
+                            (
+                                it.state == Call.State.OutgoingInit || it.state == Call.State.OutgoingProgress ||
+                             it.state == Call.State.OutgoingRinging || it.state == Call.State.OutgoingEarlyMedia ||
+                             it.state == Call.State.Connected || it.state == Call.State.StreamsRunning ||
+                             it.state == Call.State.Paused || it.state == Call.State.Pausing || it.state == Call.State.Resuming
+                            )
                         }
                         if (alreadyConnecting) {
-                            Log.w("$TAG Call to [${address.asStringUriOnly()}] is already connecting/ringing, skipping duplicate invite")
+                            Log.w("$TAG Call to [${address.asStringUriOnly()}] is already connecting/active, skipping duplicate invite")
                             coreContext.postOnMainThread {
                                 val appContext = coreContext.context
                                 if (org.linphone.ui.call.bubble.FloatingBubbleManager.canDrawOverlays(appContext)) {
