@@ -414,14 +414,42 @@ class CoreContext
                         AudioUtils.routeAudioToAnyConnectedAudioDeviceOtherThanEarpieceAndSpeaker(call)
                     }
                     AudioUtils.applyStickySpeakerIfNeeded(call)
+
+                    // First audio route backstop: get AudioManager out of MODE_NORMAL as soon as
+                    // the call is connected, then re-check once the streams are actually running.
+                    AudioUtils.ensureCallAudioRoute(
+                        call,
+                        force = true,
+                        desiredType = AudioUtils.stickyOutputTypeOrNull()
+                    )
+                    postOnCoreThreadDelayed({
+                        AudioUtils.ensureCallAudioRoute(
+                            call,
+                            force = true,
+                            desiredType = AudioUtils.stickyOutputTypeOrNull()
+                        )
+                    }, 800L)
                 }
                 Call.State.StreamsRunning -> {
                     if (previousCallState == Call.State.Connected) {
                         AudioUtils.applyStickySpeakerIfNeeded(call)
-                        call.outputAudioDevice?.let { dev ->
-                            Log.i("$TAG StreamsRunning: re-asserting output audio device [${dev.id}] (${dev.type})")
-                            call.outputAudioDevice = dev
-                        }
+
+                        // The audio stream is now running, force Android to actually route it to the
+                        // requested device. Without this a call can be connected with no sound until
+                        // the user manually switches earpiece/speaker (which restarts the stream).
+                        AudioUtils.ensureCallAudioRoute(
+                            call,
+                            force = true,
+                            desiredType = AudioUtils.stickyOutputTypeOrNull()
+                        )
+                        postOnCoreThreadDelayed({
+                            Log.i("$TAG Delayed audio route check in StreamsRunning")
+                            AudioUtils.ensureCallAudioRoute(
+                                call,
+                                force = true,
+                                desiredType = AudioUtils.stickyOutputTypeOrNull()
+                            )
+                        }, 500L)
 
                         if (!userMutedMic && call.microphoneMuted) {
                             Log.w("$TAG StreamsRunning: microphone is muted but user did not mute it, auto-unmuting")

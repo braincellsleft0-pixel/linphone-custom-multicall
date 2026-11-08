@@ -57,6 +57,13 @@ class TelecomCallControlCallback(
         if (currentEndpointType == CallEndpointCompat.TYPE_SPEAKER) {
             Log.d("$TAG Telecom endpoint is already SPEAKER, skipping request")
             hasRequestedStickySpeaker = true
+            coreContext.postOnCoreThread {
+                AudioUtils.ensureCallAudioRoute(
+                    call,
+                    force = true,
+                    desiredType = org.linphone.core.AudioDevice.Type.Speaker
+                )
+            }
             return
         }
         val speakerEndpoint = latestEndpoints.find { it.type == CallEndpointCompat.TYPE_SPEAKER }
@@ -102,6 +109,13 @@ class TelecomCallControlCallback(
         hasRequestedStickySpeaker = false
         if (currentEndpointType == CallEndpointCompat.TYPE_EARPIECE) {
             Log.d("$TAG Telecom endpoint is already EARPIECE, skipping request")
+            coreContext.postOnCoreThread {
+                AudioUtils.ensureCallAudioRoute(
+                    call,
+                    force = true,
+                    desiredType = org.linphone.core.AudioDevice.Type.Earpiece
+                )
+            }
             return
         }
         val earpieceEndpoint = latestEndpoints.find { it.type == CallEndpointCompat.TYPE_EARPIECE }
@@ -148,12 +162,29 @@ class TelecomCallControlCallback(
             Log.i(
                 "$TAG resyncAudioRoute: Linphone output=[$linphoneType] ([${linphoneDevice?.id}]), Telecom current=[${endpointTypeToString(currentEndpointType)}], target=[${endpointTypeToString(targetType)}]"
             )
-            if (targetType != CallEndpointCompat.TYPE_UNKNOWN && currentEndpointType != targetType) {
-                when (targetType) {
-                    CallEndpointCompat.TYPE_SPEAKER -> requestSpeakerEndpoint()
-                    CallEndpointCompat.TYPE_EARPIECE -> requestEarpieceEndpoint()
-                    else -> Log.d("$TAG resyncAudioRoute: endpoint type $targetType is managed by system/hardware")
-                }
+            // Always (re)apply the Android audio route for builtin devices, even when Telecom
+            // already reports the right endpoint: Telecom reporting SPEAKER/EARPIECE doesn't mean
+            // AudioManager is actually in communication mode with that device selected.
+            val desiredType = when (targetType) {
+                CallEndpointCompat.TYPE_SPEAKER -> org.linphone.core.AudioDevice.Type.Speaker
+                CallEndpointCompat.TYPE_EARPIECE -> org.linphone.core.AudioDevice.Type.Earpiece
+                else -> null
+            }
+            AudioUtils.ensureCallAudioRoute(call, force = true, desiredType = desiredType)
+            coreContext.postOnCoreThreadDelayed({
+                AudioUtils.ensureCallAudioRoute(call, force = true, desiredType = desiredType)
+            }, 700L)
+
+            if (targetType == CallEndpointCompat.TYPE_SPEAKER &&
+                currentEndpointType != CallEndpointCompat.TYPE_SPEAKER
+            ) {
+                requestSpeakerEndpoint()
+            } else if (targetType == CallEndpointCompat.TYPE_EARPIECE &&
+                currentEndpointType != CallEndpointCompat.TYPE_EARPIECE
+            ) {
+                requestEarpieceEndpoint()
+            } else if (targetType == CallEndpointCompat.TYPE_UNKNOWN) {
+                Log.d("$TAG resyncAudioRoute: no builtin device to sync, letting the system handle it")
             }
         }
     }
@@ -229,6 +260,15 @@ class TelecomCallControlCallback(
             currentEndpointType = endpoint.type
             Log.i("$TAG Current Telecom call endpoint [${endpoint.name}] with type [${endpointTypeToString(endpoint.type)}]")
             coreContext.postOnCoreThread {
+                // Never touch the Linphone output device before the call is connected: assigning it
+                // while no media stream exists leaves Android's route unapplied (no sound at connect).
+                val callState = call.state
+                if (callState != Call.State.Connected && callState != Call.State.StreamsRunning) {
+                    Log.i(
+                        "$TAG Not syncing Linphone output on Telecom endpoint change yet, call state is [$callState]"
+                    )
+                    return@postOnCoreThread
+                }
                 val currentLinphoneType = call.outputAudioDevice?.type
                 if (endpoint.type == CallEndpointCompat.TYPE_SPEAKER && currentLinphoneType != org.linphone.core.AudioDevice.Type.Speaker) {
                     Log.i("$TAG Telecom endpoint changed to SPEAKER, syncing Linphone output to Speaker")

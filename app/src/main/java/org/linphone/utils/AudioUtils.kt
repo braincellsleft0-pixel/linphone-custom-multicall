@@ -20,7 +20,9 @@
 package org.linphone.utils
 
 import android.content.Context
+import android.media.AudioDeviceInfo
 import android.media.AudioManager
+import android.os.Build
 import androidx.annotation.AnyThread
 import androidx.annotation.WorkerThread
 import androidx.media.AudioAttributesCompat
@@ -38,6 +40,9 @@ class AudioUtils {
         private const val TAG = "[Audio Utils]"
 
         private val stickySpeakerAppliedCallIds = Collections.synchronizedSet(HashSet<String>())
+
+        /** Calls for which we already forced the Android audio route to be applied. */
+        private val audioRouteEnsuredCallIds = Collections.synchronizedSet(HashSet<String>())
 
         /** User explicitly picked speaker (true) or earpiece (false). Call ONLY from user-initiated actions. */
         @WorkerThread
@@ -67,6 +72,12 @@ class AudioUtils {
             return corePreferences.keepSpeakerOn && !isExternalAudioDeviceAvailable()
         }
 
+        /** Target output type if the sticky speaker setting has to be enforced, otherwise null. */
+        @WorkerThread
+        fun stickyOutputTypeOrNull(): AudioDevice.Type? {
+            return if (shouldUseStickySpeaker()) AudioDevice.Type.Speaker else null
+        }
+
         /** Re-apply the sticky speaker on this call if needed (idempotent, applies once per call). */
         @WorkerThread
         fun applyStickySpeakerIfNeeded(call: Call) {
@@ -87,15 +98,150 @@ class AudioUtils {
             routeAudioToSpeaker(call)
         }
 
+        /**
+         * Backstop that makes sure Android is really routing the call audio to the builtin
+         * earpiece / speaker once the media stream is running.
+         *
+         * The Linphone SDK and the self managed Telecom integration normally do it, but when the
+         * SDK audio mode switch races with Telecom's endpoint setup the RTP flow can start while
+         * AudioManager is still in MODE_NORMAL: the call is "connected" but nothing is heard until
+         * the user manually changes the audio route (which restarts the audio stream).
+         *
+         * This method is idempotent, is only allowed while a call is actually connected, and never
+         * touches bluetooth / wired headset / hearing aid routing (those are left to the system).
+         *
+         * @param force true to re-apply the route even if it was already ensured for this call.
+         * @param desiredType explicit target type, use null to read it from the call's output device.
+         */
+        @WorkerThread
+        fun ensureCallAudioRoute(
+            call: Call? = null,
+            force: Boolean = false,
+            desiredType: AudioDevice.Type? = null
+        ) {
+            if (coreContext.core.callsNb == 0) {
+                Log.i("$TAG No call, not touching Android audio route")
+                return
+            }
+
+            val currentCall = call ?: coreContext.core.currentCall ?: coreContext.core.calls.firstOrNull()
+            if (currentCall == null) {
+                Log.w("$TAG No call found to ensure Android audio route for")
+                return
+            }
+
+            val state = currentCall.state
+            if (state != Call.State.Connected && state != Call.State.StreamsRunning) {
+                Log.i("$TAG Not ensuring Android audio route yet, call state is [$state]")
+                return
+            }
+
+            val callId = currentCall.callLog.callId.orEmpty()
+            if (!force && callId.isNotEmpty() && audioRouteEnsuredCallIds.contains(callId)) {
+                Log.i("$TAG Android audio route already ensured for call [$callId], skipping")
+                return
+            }
+
+            val targetType = desiredType ?: currentCall.outputAudioDevice?.type
+                ?: coreContext.core.defaultOutputAudioDevice?.type
+            if (targetType != AudioDevice.Type.Earpiece && targetType != AudioDevice.Type.Speaker) {
+                Log.i("$TAG Desired output device [$targetType] isn't earpiece or speaker, leaving Android audio route untouched")
+                return
+            }
+
+            if (callId.isNotEmpty()) audioRouteEnsuredCallIds.add(callId)
+
+            val audioManager = coreContext.context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+            if (audioManager == null) {
+                Log.e("$TAG Unable to get Android AudioManager, can't ensure audio route")
+                return
+            }
+
+            try {
+                // Without MODE_IN_COMMUNICATION Android keeps the voice stream muted / not routed.
+                if (audioManager.mode != AudioManager.MODE_IN_COMMUNICATION) {
+                    Log.w("$TAG AudioManager mode is [${audioManager.mode}], switching to MODE_IN_COMMUNICATION")
+                    audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+                }
+
+                val wantSpeaker = targetType == AudioDevice.Type.Speaker
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    val wantedInfoType = if (wantSpeaker) {
+                        AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
+                    } else {
+                        AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
+                    }
+                    val currentCommunicationDevice = audioManager.communicationDevice
+                    if (currentCommunicationDevice?.type == wantedInfoType) {
+                        Log.i("$TAG Communication device is already [$wantedInfoType], nothing to do")
+                    } else {
+                        val target = audioManager.availableCommunicationDevices.firstOrNull {
+                            it.type == wantedInfoType
+                        }
+                        if (target != null) {
+                            val success = audioManager.setCommunicationDevice(target)
+                            Log.i(
+                                "$TAG setCommunicationDevice([${target.productName}], type [$wantedInfoType]) result: $success"
+                            )
+                        } else {
+                            Log.w("$TAG No communication device with type [$wantedInfoType] available")
+                        }
+                    }
+                } else {
+                    @Suppress("DEPRECATION")
+                    if (audioManager.isSpeakerphoneOn != wantSpeaker) {
+                        @Suppress("DEPRECATION")
+                        audioManager.isSpeakerphoneOn = wantSpeaker
+                        Log.i("$TAG Updated legacy audioManager.isSpeakerphoneOn = $wantSpeaker")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("$TAG Failed to ensure Android audio route: $e")
+            }
+        }
+
         @WorkerThread
         fun applySystemAudioRoute(isSpeaker: Boolean) {
-            Log.i("$TAG applySystemAudioRoute(isSpeaker=$isSpeaker) - delegating routing to Linphone & Telecom")
+            Log.i("$TAG applySystemAudioRoute(isSpeaker=$isSpeaker) - forwarding to ensureCallAudioRoute()")
+            ensureCallAudioRoute(
+                call = null,
+                force = true,
+                desiredType = if (isSpeaker) AudioDevice.Type.Speaker else AudioDevice.Type.Earpiece
+            )
         }
 
         @WorkerThread
         fun resetSystemAudioRoute() {
-            Log.i("$TAG resetSystemAudioRoute() - delegating routing to Linphone & Telecom")
+            audioRouteEnsuredCallIds.clear()
             stickySpeakerAppliedCallIds.clear()
+
+            if (coreContext.core.callsNb > 0) {
+                Log.i("$TAG Not resetting Android audio route, [${coreContext.core.callsNb}] call(s) still running")
+                return
+            }
+
+            val audioManager = coreContext.context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+            if (audioManager == null) {
+                Log.e("$TAG Unable to get Android AudioManager, can't reset audio route")
+                return
+            }
+
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    audioManager.clearCommunicationDevice()
+                }
+                @Suppress("DEPRECATION")
+                if (audioManager.isSpeakerphoneOn) {
+                    @Suppress("DEPRECATION")
+                    audioManager.isSpeakerphoneOn = false
+                }
+                if (audioManager.mode == AudioManager.MODE_IN_COMMUNICATION) {
+                    audioManager.mode = AudioManager.MODE_NORMAL
+                }
+                Log.i("$TAG Android audio route reset after last call ended")
+            } catch (e: Exception) {
+                Log.w("$TAG Failed to reset Android audio route: $e")
+            }
         }
 
         @WorkerThread
@@ -244,6 +390,11 @@ class AudioUtils {
                     coreContext.telecomManager.requestSpeakerEndpoint(call)
                 } else if (audioDevice.type == AudioDevice.Type.Earpiece) {
                     coreContext.telecomManager.requestEarpieceEndpoint(call)
+                }
+                // Also force Android's own audio route to follow, so that switching
+                // earpiece/speaker always restarts the voice stream on the right device.
+                if (call != null) {
+                    ensureCallAudioRoute(call, force = true, desiredType = audioDevice.type)
                 }
             }
             return true
