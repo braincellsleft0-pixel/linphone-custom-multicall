@@ -50,8 +50,14 @@ class TelecomCallControlCallback(
 
     private var mutedByTelecomManager = false
     private var latestEndpoints: List<CallEndpointCompat> = emptyList()
+    private var currentEndpointType: Int = CallEndpointCompat.TYPE_UNKNOWN
+    private var hasRequestedStickySpeaker: Boolean = false
 
     fun requestSpeakerEndpoint() {
+        if (currentEndpointType == CallEndpointCompat.TYPE_SPEAKER) {
+            Log.d("$TAG Telecom endpoint is already SPEAKER, skipping request")
+            return
+        }
         val speakerEndpoint = latestEndpoints.find { it.type == CallEndpointCompat.TYPE_SPEAKER }
         if (speakerEndpoint != null) {
             scope.launch {
@@ -69,6 +75,11 @@ class TelecomCallControlCallback(
     }
 
     fun requestEarpieceEndpoint() {
+        hasRequestedStickySpeaker = false
+        if (currentEndpointType == CallEndpointCompat.TYPE_EARPIECE) {
+            Log.d("$TAG Telecom endpoint is already EARPIECE, skipping request")
+            return
+        }
         val earpieceEndpoint = latestEndpoints.find { it.type == CallEndpointCompat.TYPE_EARPIECE }
         if (earpieceEndpoint != null) {
             scope.launch {
@@ -150,17 +161,19 @@ class TelecomCallControlCallback(
             }
         }
 
+        callControl.currentCallEndpoint.onEach { endpoint ->
+            currentEndpointType = endpoint.type
+            Log.i("$TAG Current Telecom call endpoint [${endpoint.name}] with type [${endpointTypeToString(endpoint.type)}]")
+        }.launchIn(scope)
+
         callControl.availableEndpoints.onEach { list ->
             latestEndpoints = list
             Log.i("$TAG Available audio endpoints list: ${list.map { "${it.name}:${it.type}" }}")
-            val isSpeaker = call.outputAudioDevice?.type == org.linphone.core.AudioDevice.Type.Speaker || AudioUtils.shouldUseStickySpeaker()
-            if (isSpeaker) {
+            val wantsSpeaker = call.outputAudioDevice?.type == org.linphone.core.AudioDevice.Type.Speaker || AudioUtils.shouldUseStickySpeaker()
+            if (wantsSpeaker && currentEndpointType != CallEndpointCompat.TYPE_SPEAKER && !hasRequestedStickySpeaker) {
+                hasRequestedStickySpeaker = true
                 requestSpeakerEndpoint()
             }
-        }.launchIn(scope)
-
-        callControl.currentCallEndpoint.onEach { endpoint ->
-            Log.i("$TAG Current Telecom call endpoint [${endpoint.name}] with type [${endpointTypeToString(endpoint.type)}]")
         }.launchIn(scope)
 
         callControl.isMuted.onEach { muted ->
@@ -169,6 +182,9 @@ class TelecomCallControlCallback(
                 Log.i(
                     "$TAG We're asked to [${if (muted) "mute" else "unmute"}] the call in state [$callState]"
                 )
+                if (muted) {
+                    Log.w("$TAG Telecom requested MUTE for call [${call.remoteAddress.asStringUriOnly()}], muting microphone")
+                }
                 // Only follow un-mute requests for not outgoing calls (such as joining a conference muted)
                 // and if connected to Android Auto that has a way to let user mute/unmute from the car directly
                 // or if we muted the call previously following Telecom Manager request.

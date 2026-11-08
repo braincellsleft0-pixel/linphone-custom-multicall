@@ -20,14 +20,13 @@
 package org.linphone.utils
 
 import android.content.Context
-import android.media.AudioDeviceInfo
 import android.media.AudioManager
-import android.os.Build
 import androidx.annotation.AnyThread
 import androidx.annotation.WorkerThread
 import androidx.media.AudioAttributesCompat
 import androidx.media.AudioFocusRequestCompat
 import androidx.media.AudioManagerCompat
+import java.util.Collections
 import org.linphone.LinphoneApplication.Companion.coreContext
 import org.linphone.LinphoneApplication.Companion.corePreferences
 import org.linphone.core.AudioDevice
@@ -37,6 +36,8 @@ import org.linphone.core.tools.Log
 class AudioUtils {
     companion object {
         private const val TAG = "[Audio Utils]"
+
+        private val stickySpeakerAppliedCallIds = Collections.synchronizedSet(HashSet<String>())
 
         /** User explicitly picked speaker (true) or earpiece (false). Call ONLY from user-initiated actions. */
         @WorkerThread
@@ -66,73 +67,35 @@ class AudioUtils {
             return corePreferences.keepSpeakerOn && !isExternalAudioDeviceAvailable()
         }
 
-        /** Re-apply the sticky speaker on this call if needed. */
+        /** Re-apply the sticky speaker on this call if needed (idempotent, applies once per call). */
         @WorkerThread
         fun applyStickySpeakerIfNeeded(call: Call) {
             if (!shouldUseStickySpeaker()) return
-            if (call.outputAudioDevice?.type != AudioDevice.Type.Speaker) {
-                Log.i("$TAG Sticky speaker enabled, routing call [${call.remoteAddress.asStringUriOnly()}] to speaker")
-                routeAudioToSpeaker(call)
-            } else {
-                applySystemAudioRoute(isSpeaker = true)
-                coreContext.telecomManager.requestSpeakerEndpoint(call)
+
+            val callId = call.callLog.callId.orEmpty()
+            if (callId.isNotEmpty() && stickySpeakerAppliedCallIds.contains(callId)) {
+                return
             }
+
+            if (call.outputAudioDevice?.type == AudioDevice.Type.Speaker) {
+                if (callId.isNotEmpty()) stickySpeakerAppliedCallIds.add(callId)
+                return
+            }
+
+            if (callId.isNotEmpty()) stickySpeakerAppliedCallIds.add(callId)
+            Log.i("$TAG Sticky speaker enabled, routing call [${call.remoteAddress.asStringUriOnly()}] to speaker")
+            routeAudioToSpeaker(call)
         }
 
         @WorkerThread
         fun applySystemAudioRoute(isSpeaker: Boolean) {
-            try {
-                val audioManager = coreContext.context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                if (audioManager.mode != AudioManager.MODE_IN_COMMUNICATION && audioManager.mode != AudioManager.MODE_IN_CALL) {
-                    audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
-                }
-                @Suppress("DEPRECATION")
-                if (audioManager.isSpeakerphoneOn != isSpeaker) {
-                    audioManager.isSpeakerphoneOn = isSpeaker
-                    Log.i("$TAG Updated audioManager.isSpeakerphoneOn = $isSpeaker")
-                }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    if (isSpeaker) {
-                        val speaker = audioManager.availableCommunicationDevices.firstOrNull {
-                            it.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
-                        }
-                        if (speaker != null) {
-                            val result = audioManager.setCommunicationDevice(speaker)
-                            Log.i("$TAG setCommunicationDevice(SPEAKER) result: $result")
-                        }
-                    } else {
-                        val earpiece = audioManager.availableCommunicationDevices.firstOrNull {
-                            it.type == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
-                        }
-                        if (earpiece != null) {
-                            val result = audioManager.setCommunicationDevice(earpiece)
-                            Log.i("$TAG setCommunicationDevice(EARPIECE) result: $result")
-                        } else {
-                            audioManager.clearCommunicationDevice()
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                Log.w("$TAG Failed to apply system audio route (isSpeaker=$isSpeaker): $e")
-            }
+            Log.i("$TAG applySystemAudioRoute(isSpeaker=$isSpeaker) - delegating routing to Linphone & Telecom")
         }
 
         @WorkerThread
         fun resetSystemAudioRoute() {
-            try {
-                val audioManager = coreContext.context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                @Suppress("DEPRECATION")
-                audioManager.isSpeakerphoneOn = false
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    audioManager.clearCommunicationDevice()
-                }
-                if (audioManager.mode == AudioManager.MODE_IN_COMMUNICATION) {
-                    audioManager.mode = AudioManager.MODE_NORMAL
-                }
-                Log.i("$TAG Reset system audio route")
-            } catch (e: Exception) {
-                Log.w("$TAG Failed to reset system audio route: $e")
-            }
+            Log.i("$TAG resetSystemAudioRoute() - delegating routing to Linphone & Telecom")
+            stickySpeakerAppliedCallIds.clear()
         }
 
         @WorkerThread
@@ -278,13 +241,9 @@ class AudioUtils {
             }
             if (output) {
                 if (audioDevice.type == AudioDevice.Type.Speaker) {
-                    applySystemAudioRoute(isSpeaker = true)
                     coreContext.telecomManager.requestSpeakerEndpoint(call)
                 } else if (audioDevice.type == AudioDevice.Type.Earpiece) {
-                    applySystemAudioRoute(isSpeaker = false)
                     coreContext.telecomManager.requestEarpieceEndpoint(call)
-                } else {
-                    applySystemAudioRoute(isSpeaker = false)
                 }
             }
             return true

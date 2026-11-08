@@ -385,7 +385,6 @@ class CoreContext
                         Log.i("$TAG Trying to route audio to either bluetooth, hearing aid, headphones or headset if available")
                         AudioUtils.routeAudioToAnyConnectedAudioDeviceOtherThanEarpieceAndSpeaker(call)
                     }
-                    AudioUtils.applyStickySpeakerIfNeeded(call)
                 }
                 Call.State.Connected -> {
                     postOnMainThread {
@@ -414,7 +413,6 @@ class CoreContext
                     AudioUtils.applyStickySpeakerIfNeeded(call)
                 }
                 Call.State.StreamsRunning -> {
-                    AudioUtils.applyStickySpeakerIfNeeded(call)
                     if (previousCallState == Call.State.Connected) {
                         if (corePreferences.automaticallyStartCallRecording && !call.params.isRecording) {
                             if (call.conference == null) { // TODO: FIXME: Conference recordings are currently disabled
