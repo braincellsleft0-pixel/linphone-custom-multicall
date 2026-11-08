@@ -154,12 +154,29 @@ class CoreContext
     private lateinit var coreThread: Handler
 
     private val audioDeviceCallback = object : AudioDeviceCallback() {
+        private fun isExternalDeviceType(type: Int): Boolean {
+            return when (type) {
+                AudioDeviceInfo.TYPE_BLUETOOTH_SCO, AudioDeviceInfo.TYPE_BLE_HEADSET,
+                AudioDeviceInfo.TYPE_BLE_SPEAKER, AudioDeviceInfo.TYPE_HEARING_AID,
+                AudioDeviceInfo.TYPE_BLE_HEARING_AID, AudioDeviceInfo.TYPE_USB_HEADSET,
+                AudioDeviceInfo.TYPE_USB_DEVICE, AudioDeviceInfo.TYPE_USB_ACCESSORY,
+                AudioDeviceInfo.TYPE_WIRED_HEADPHONES, AudioDeviceInfo.TYPE_WIRED_HEADSET,
+                AudioDeviceInfo.TYPE_HDMI, AudioDeviceInfo.TYPE_HDMI_ARC,
+                AudioDeviceInfo.TYPE_LINE_ANALOG, AudioDeviceInfo.TYPE_LINE_DIGITAL,
+                AudioDeviceInfo.TYPE_DOCK, AudioDeviceInfo.TYPE_FM -> true
+                // Builtin earpiece/speaker/mic/telephony changes are NOT external: reloading the
+                // sound devices for them restarts running audio streams (broken/crackling ringback).
+                else -> false
+            }
+        }
+
         @WorkerThread
         override fun onAudioDevicesAdded(addedDevices: Array<out AudioDeviceInfo>?) {
             if (!addedDevices.isNullOrEmpty()) {
                 Log.i("$TAG [${addedDevices.size}] new device(s) have been added:")
                 var atLeastOneNewDeviceIsBluetooth = false
                 var atLeastOneNewDeviceIsHeadset = false
+                var atLeastOneExternalChange = false
                 for (device in addedDevices) {
                     Log.i(
                         "$TAG Added device [${device.productName}] with ID [${device.id}] and type [${device.type}]"
@@ -168,13 +185,22 @@ class CoreContext
                     when (device.type) {
                         AudioDeviceInfo.TYPE_BLUETOOTH_SCO, AudioDeviceInfo.TYPE_BLE_HEADSET, AudioDeviceInfo.TYPE_BLE_SPEAKER, AudioDeviceInfo.TYPE_HEARING_AID, AudioDeviceInfo.TYPE_BLE_HEARING_AID -> {
                             atLeastOneNewDeviceIsBluetooth = true
+                            atLeastOneExternalChange = true
                         }
 
                         AudioDeviceInfo.TYPE_USB_HEADSET, AudioDeviceInfo.TYPE_WIRED_HEADPHONES, AudioDeviceInfo.TYPE_WIRED_HEADSET -> {
                             atLeastOneNewDeviceIsHeadset = true
+                            atLeastOneExternalChange = true
                         }
-                        else -> {}
+                        else -> {
+                            if (isExternalDeviceType(device.type)) atLeastOneExternalChange = true
+                        }
                     }
+                }
+
+                if (!atLeastOneExternalChange) {
+                    Log.i("$TAG Only builtin audio device(s) changed, skipping sound devices reload to avoid restarting running streams")
+                    return
                 }
 
                 Log.i("$TAG Reloading sound devices in 500ms")
@@ -197,10 +223,17 @@ class CoreContext
         override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo>?) {
             if (!removedDevices.isNullOrEmpty()) {
                 Log.i("$TAG [${removedDevices.size}] existing device(s) have been removed")
+                var atLeastOneExternalChange = false
                 for (device in removedDevices) {
                     Log.i(
                         "$TAG Removed device [${device.id}][${device.productName}][${device.type}]"
                     )
+                    if (isExternalDeviceType(device.type)) atLeastOneExternalChange = true
+                }
+
+                if (!atLeastOneExternalChange) {
+                    Log.i("$TAG Only builtin audio device(s) changed, skipping sound devices reload to avoid restarting running streams")
+                    return
                 }
 
                 Log.i("$TAG Reloading sound devices in 500ms")
@@ -450,6 +483,13 @@ class CoreContext
                                 desiredType = AudioUtils.stickyOutputTypeOrNull()
                             )
                         }, 500L)
+
+                        // If the freshly started stream is still silent (device-specific issue where
+                        // Android never routes the first stream), restart it once by flipping the
+                        // output device and back — the same thing a manual speaker toggle does.
+                        postOnCoreThreadDelayed({
+                            AudioUtils.restartCallAudioStreamOnce(call)
+                        }, 700L)
 
                         if (!userMutedMic && call.microphoneMuted) {
                             Log.w("$TAG StreamsRunning: microphone is muted but user did not mute it, auto-unmuting")

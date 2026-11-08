@@ -42,6 +42,9 @@ class AudioUtils {
         /** Calls for which we already forced the Android audio route to be applied. */
         private val audioRouteEnsuredCallIds = Collections.synchronizedSet(HashSet<String>())
 
+        /** Calls for which we already restarted the audio stream once after connect. */
+        private val streamRestartedCallIds = Collections.synchronizedSet(HashSet<String>())
+
         /** User explicitly picked speaker (true) or earpiece (false). Call ONLY from user-initiated actions. */
         @WorkerThread
         fun rememberUserSpeakerChoice(speaker: Boolean) {
@@ -173,10 +176,73 @@ class AudioUtils {
             )
         }
 
+        /**
+         * One-shot "audio kick" for a freshly connected call.
+         *
+         * On some devices the first audio stream starts without being routed by Android at all:
+         * the call is connected but completely silent until the user toggles the speaker button.
+         * Toggling works because it changes the output device, which forces the SDK to restart
+         * the audio stream on the correct route.
+         *
+         * This method reproduces that fix automatically, at most once per call: it switches the
+         * output device to the other builtin device and back after a short delay. It only acts on
+         * builtin earpiece/speaker and never touches bluetooth / headset / hearing aid routing.
+         */
+        @WorkerThread
+        fun restartCallAudioStreamOnce(call: Call) {
+            val callId = call.callLog.callId.orEmpty()
+            if (callId.isNotEmpty() && streamRestartedCallIds.contains(callId)) {
+                Log.i("$TAG Audio kick already done for call [$callId]")
+                return
+            }
+            if (callId.isNotEmpty()) streamRestartedCallIds.add(callId)
+
+            val type = call.outputAudioDevice?.type
+            if (type != AudioDevice.Type.Earpiece && type != AudioDevice.Type.Speaker) {
+                Log.i("$TAG Output device is [$type], no audio kick needed")
+                return
+            }
+
+            val otherType = if (type == AudioDevice.Type.Speaker) {
+                AudioDevice.Type.Earpiece
+            } else {
+                AudioDevice.Type.Speaker
+            }
+            val otherDevice = coreContext.core.extendedAudioDevices.firstOrNull {
+                it.type == otherType && it.hasCapability(AudioDevice.Capabilities.CapabilityPlay)
+            }
+            if (otherDevice == null) {
+                Log.w("$TAG No [$otherType] device found, can't kick audio stream")
+                return
+            }
+
+            Log.w("$TAG Audio kick: switching to [$otherType] then back to [$type] to restart the stream")
+            call.outputAudioDevice = otherDevice
+            coreContext.postOnCoreThreadDelayed({
+                if (call.state != Call.State.Connected && call.state != Call.State.StreamsRunning) {
+                    Log.i("$TAG Call no longer active, skipping audio kick switch back")
+                    return@postOnCoreThreadDelayed
+                }
+                val backDevice = coreContext.core.extendedAudioDevices.firstOrNull {
+                    it.type == type && it.hasCapability(AudioDevice.Capabilities.CapabilityPlay)
+                }
+                if (backDevice != null) {
+                    call.outputAudioDevice = backDevice
+                }
+                // Make sure Telecom's endpoint follows the restored device.
+                if (type == AudioDevice.Type.Speaker) {
+                    coreContext.telecomManager.requestSpeakerEndpoint(call)
+                } else {
+                    coreContext.telecomManager.requestEarpieceEndpoint(call)
+                }
+            }, 150L)
+        }
+
         @WorkerThread
         fun resetSystemAudioRoute() {
             audioRouteEnsuredCallIds.clear()
             stickySpeakerAppliedCallIds.clear()
+            streamRestartedCallIds.clear()
 
             // Do NOT clear the communication device or toggle isSpeakerphoneOn here: the Linphone
             // SDK and Android Telecom already restore the route on call end. Forcing it ourselves
